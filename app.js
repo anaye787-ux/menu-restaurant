@@ -1,14 +1,9 @@
-/**
- * @file app.js
- * @description نسخة الإنتاج المصلحة بالكامل المتوافقة مع 9 أعمدة وجدول Excel
- */
-
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWMvgKogUkg2pgt7r_jMJ4BVVBATNXy1g_OKZDBKKwryAevaJE1O6NekbKg0F7YZL0K/pub?output=csv';
 
 let menuData = [];
 let currentLang = 'fr';
 
-/* --- ميزة: جلب البيانات ومعالجة الأعمدة الـ 9 بدقة (Data Fetching & Mapping) --- */
+/* --- ميزة: جلب البيانات (Data Fetching) --- */
 async function init() {
     try {
         const res = await fetch(CSV_URL);
@@ -18,23 +13,23 @@ async function init() {
         const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
         menuData = rows.map(row => {
-            // تقسيم السطور مع مراعاة الفواصل داخل علامات التنصيص
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            // تقسيم السطر بشكل مباشر وبسيط بناءً على الفواصل لضمان عدم سقوط أي كلمة عربية
+            const cols = row.split(',');
             
-            const clean = (val) => val ? val.replace(/^"|"$/g, '').trim() : '';
+            const clean = (val) => val ? val.trim().replace(/^"|"$/g, '') : '';
             
             return {
-                cat_ar:  clean(cols[0]), // Column A
-                cat_fr:  clean(cols[1]), // Column B
-                sub:     clean(cols[2]), // Column C
-                cat_en:  clean(cols[3]), // Column D
-                name_ar: clean(cols[4]), // Column E
-                name_fr: clean(cols[5]), // Column F
-                name_en: clean(cols[6]), // Column G
-                // جلب السعر ديناميكياً من العمود الثامن أو الأخير لضمان عدم ضياعه بسبب الـ 9 أعمدة
-                price:   clean(cols[7]) || clean(cols[8]) 
+                cat_ar:  clean(cols[0]), // العمود A (Category_AR)
+                cat_fr:  clean(cols[1]), // العمود B (Category_FR)
+                sub:     clean(cols[2]), // العمود C (SubCategory)
+                cat_en:  clean(cols[3]), // العمود D (Category_EN)
+                name_ar: clean(cols[4]), // العمود E (Item_Name_AR)
+                name_fr: clean(cols[5]), // العمود F (Item_Name_FR)
+                name_en: clean(cols[6]), // العمود G (Item_Name_EN)
+                price:   clean(cols[7]), // العمود H (Price)
+                image:   clean(cols[8])  // العمود I (ImageURL)
             };
-        }).filter(item => item.cat_fr || item.cat_ar); // إصلاح: الفلترة تسمح بمرور الأسطر العربية حتى لو تأخرت ترجمة جوجل!
+        }).filter(item => item.cat_fr || item.cat_ar); // يضمن مرور السطور سواء كتبت بالعربي أو الفرنسي
         
         renderMain();
     } catch (err) {
@@ -90,7 +85,7 @@ function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // استخراج الفئات الرئيسية بناءً على اللغة المحددة
+    // استخراج الفئات الرئيسية بناءً على اللغة النشطة
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr).filter(Boolean))];
     
     content.innerHTML = cats.map(c => `
@@ -107,11 +102,11 @@ function renderSub(catName) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // فلترة دقيقة لمطابقة الفئة الحالية باللغة الحالية أو الفرنسية كاحتياط
+    // فلترة المنتجات بناءً على الفئة المختارة
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
     const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
     
-    // إذا كان القسم لا يحتوي على فروع فرعية (مثل Boisson chaude)، انتقل للأصناف فوراً وبثبات
+    // إذا كان القسم فارغاً من الفرعيات (مثل مشروب ساخن ومشروب بارد) ننتقل للأصناف مباشرة
     if (subs.length === 0) {
         renderItems(catName, "", false);
         return;
@@ -143,7 +138,7 @@ function renderItems(catName, sub, hasParentSub) {
         </div>
     `).join('');
 
-    // حل مشكلة زر الرجوع بشكل حاسم ذكي بناءً على وجود الأقسام الفرعية الأصلية
+    // تحديث زر الرجوع
     updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
 }
 
