@@ -55,6 +55,7 @@ function showCategories() {
     const content = document.getElementById('content');
     content.innerHTML = cats.map(c => `<div class="card" onclick="renderSub('${c}')"><span class="font-bold text-lg">${c}</span></div>`).join('');
     
+    // زر الرجوع يعيدنا للصفحة الرئيسية (Welcome Screen)
     updateBackButton(renderMain);
 }
 
@@ -62,33 +63,25 @@ function renderSub(catName) {
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
     const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
     
-    if (subs.length === 0) { renderItems(catName, ""); return; }
-    
-    const content = document.getElementById('content');
-    content.innerHTML = subs.map(s => `<div class="card" onclick="renderItems('${catName}', '${s}')"><span class="font-bold text-lg">${s}</span></div>`).join('');
-    updateBackButton(showCategories);
-}
-
-function renderSub(catName) {
-    const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
-    const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
-    
-    // إذا لم تكن هناك أقسام فرعية، نذهب مباشرة للأصناف
+    // الحالة 1: لا توجد أقسام فرعية -> عرض الأصناف مباشرة
     if (subs.length === 0) {
         renderItems(catName, ""); 
-        // التعديل هنا: نقوم بتحديث زر الرجوع ليعود للقائمة الرئيسية
+        // زر الرجوع هنا يجب أن يعيدنا لقائمة الأقسام الرئيسية
         updateBackButton(showCategories); 
         return;
     }
     
-    // إذا كانت هناك أقسام فرعية
+    // الحالة 2: توجد أقسام فرعية
     const content = document.getElementById('content');
     content.innerHTML = subs.map(s => `<div class="card" onclick="renderItems('${catName}', '${s}')"><span class="font-bold text-lg">${s}</span></div>`).join('');
     
-    // زر الرجوع يعود للقائمة الرئيسية
+    // زر الرجوع يعيدنا لقائمة الأقسام الرئيسية
     updateBackButton(showCategories);
 }
 
+/* ملاحظة: تأكد من حذف أي نسخة مكررة من دالة renderSub 
+   من ملف app.js الخاص بك ليعمل الكود بدون أخطاء.
+*/
 /* --- ميزة: المساعدة (Helper Functions) --- */
 function updateBackButton(callback) {
     const btn = document.getElementById('backBtn');
