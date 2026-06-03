@@ -13,18 +13,21 @@
 <body class="bg-gray-100 font-sans">
     <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-xl p-4">
         
-        <div class="relative flex justify-end p-2 mb-4">
-            <button onclick="toggleLangMenu()" class="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm flex items-center justify-center text-2xl">
-                <span id="currentFlag">🇫🇷</span>
-            </button>
-            <div id="langMenu" class="hidden absolute top-16 right-0 bg-white shadow-2xl rounded-xl p-2 z-50 border">
-                <button onclick="changeLanguage('ar', '🇲🇦')" class="block p-2 text-2xl">🇲🇦</button>
-                <button onclick="changeLanguage('fr', '🇫🇷')" class="block p-2 text-2xl">🇫🇷</button>
-                <button onclick="changeLanguage('en', '🇺🇸')" class="block p-2 text-2xl">🇺🇸</button>
+        <div class="flex justify-between items-center mb-6">
+            <button id="backBtn" class="hidden bg-gray-200 px-4 py-2 rounded-lg font-bold z-50">⬅</button>
+            
+            <div class="relative z-50 ml-auto">
+                <button onclick="toggleLangMenu()" class="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm flex items-center justify-center text-2xl">
+                    <span id="currentFlag">🇫🇷</span>
+                </button>
+                <div id="langMenu" class="hidden absolute top-14 right-0 bg-white shadow-2xl rounded-xl p-2 border">
+                    <button onclick="changeLanguage('ar', '🇲🇦')" class="block p-2 text-2xl">🇲🇦</button>
+                    <button onclick="changeLanguage('fr', '🇫🇷')" class="block p-2 text-2xl">🇫🇷</button>
+                    <button onclick="changeLanguage('en', '🇺🇸')" class="block p-2 text-2xl">🇺🇸</button>
+                </div>
             </div>
         </div>
 
-        <button id="backBtn" class="hidden mb-4 bg-gray-200 px-4 py-2 rounded-lg font-bold">⬅ Retour</button>
         <div id="content" class="grid gap-3"></div>
     </div>
     <script src="app.js"></script>
