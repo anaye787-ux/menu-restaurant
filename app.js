@@ -32,11 +32,11 @@ function changeLanguage(lang, flag) {
 
 function renderMain() {
     const content = document.getElementById('content');
-    const texts = { ar: {t:'مرحباً بكم', b:'عرض القائمة'}, fr: {t:'Bienvenue', b:'Voir le Menu'}, en: {t:'Welcome', b:'View Menu'} };
+    const texts = { ar: {t:'مرحباً بكم في مقهانا', b:'عرض القائمة'}, fr: {t:'Bienvenue chez nous', b:'Voir le Menu'}, en: {t:'Welcome to our Cafe', b:'View Menu'} };
     content.innerHTML = `
         <div class="text-center p-6">
             <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=500" class="w-full h-64 object-cover rounded-2xl mb-6 shadow-lg">
-            <h1 class="text-3xl font-bold mb-6">${texts[currentLang].t}</h1>
+            <h1 class="text-2xl font-bold mb-6">${texts[currentLang].t}</h1>
             <button onclick="showCategories()" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold shadow-xl">${texts[currentLang].b}</button>
         </div>
     `;
@@ -47,7 +47,6 @@ function showCategories() {
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr))];
     const content = document.getElementById('content');
     content.innerHTML = cats.map(c => `<div class="card" onclick="renderSub('${c}')"><span class="font-bold text-lg">${c}</span></div>`).join('');
-    
     const btn = document.getElementById('backBtn');
     btn.classList.remove('hidden');
     btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
@@ -57,9 +56,7 @@ function showCategories() {
 function renderSub(catName) {
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
     const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
-    
     if (subs.length === 0) { renderItems(catName, ""); return; }
-    
     const content = document.getElementById('content');
     content.innerHTML = subs.map(s => `<div class="card" onclick="renderItems('${catName}', '${s}')"><span class="font-bold text-lg">${s}</span></div>`).join('');
     document.getElementById('backBtn').onclick = showCategories;
