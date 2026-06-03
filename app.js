@@ -1,37 +1,40 @@
-/* --- ميزة: الإعدادات الأساسية والحالة الثابتة (Core Configuration & State) --- */
+/**
+ * @file app.js
+ * @description نسخة الإنتاج المصلحة بالكامل المتوافقة مع 9 أعمدة وجدول Excel
+ */
+
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWMvgKogUkg2pgt7r_jMJ4BVVBATNXy1g_OKZDBKKwryAevaJE1O6NekbKg0F7YZL0K/pub?output=csv';
 
 let menuData = [];
 let currentLang = 'fr';
 
-/* --- ميزة: جلب البيانات ومعالجة النصوص الاحترافية (Robust Data Fetching) --- */
+/* --- ميزة: جلب البيانات ومعالجة الأعمدة الـ 9 بدقة (Data Fetching & Mapping) --- */
 async function init() {
     try {
         const res = await fetch(CSV_URL);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         
         const text = await res.text();
-        
-        // معالجة السطور بشكل آمن مع تفادي السطور الفارغة
         const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
         menuData = rows.map(row => {
-            // Regex احترافي لتقسيم السطر عبر الفواصل مع مراعاة النصوص المحاطة بعلامات تنصيص
-            const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',');
+            // تقسيم السطور مع مراعاة الفواصل داخل علامات التنصيص
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             
             const clean = (val) => val ? val.replace(/^"|"$/g, '').trim() : '';
             
             return {
-                cat_ar: clean(cols[0]),
-                cat_fr: clean(cols[1]),
-                sub:    clean(cols[2]),
-                cat_en: clean(cols[3]),
-                name_ar: clean(cols[4]),
-                name_fr: clean(cols[5]),
-                name_en: clean(cols[6]),
-                price:   clean(cols[7])
+                cat_ar:  clean(cols[0]), // Column A
+                cat_fr:  clean(cols[1]), // Column B
+                sub:     clean(cols[2]), // Column C
+                cat_en:  clean(cols[3]), // Column D
+                name_ar: clean(cols[4]), // Column E
+                name_fr: clean(cols[5]), // Column F
+                name_en: clean(cols[6]), // Column G
+                // جلب السعر ديناميكياً من العمود الثامن أو الأخير لضمان عدم ضياعه بسبب الـ 9 أعمدة
+                price:   clean(cols[7]) || clean(cols[8]) 
             };
-        }).filter(item => item.cat_fr); // التحقق من وجود الفئة الفرنسية كمعيار أساسي لقانونية السطر
+        }).filter(item => item.cat_fr || item.cat_ar); // إصلاح: الفلترة تسمح بمرور الأسطر العربية حتى لو تأخرت ترجمة جوجل!
         
         renderMain();
     } catch (err) {
@@ -40,7 +43,7 @@ async function init() {
     }
 }
 
-/* --- ميزة: إدارة اللغات والاتجاهات ديناميكياً (Internationalization & Localization) --- */
+/* --- ميزة: إدارة اللغات (Language Management) --- */
 function toggleLangMenu() {
     const menu = document.getElementById('langMenu');
     if (menu) menu.classList.toggle('hidden');
@@ -48,11 +51,9 @@ function toggleLangMenu() {
 
 function changeLanguage(lang, flag) {
     currentLang = lang;
-    
     const flagElem = document.getElementById('currentFlag');
     if (flagElem) flagElem.innerText = flag;
     
-    // إدارة اتجاه الصفحة بدقة كودية سلاسة (RTL للمغربي والعربي، LTR للباقي)
     document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
     
@@ -60,7 +61,7 @@ function changeLanguage(lang, flag) {
     renderMain();
 }
 
-/* --- ميزة: الواجهة الترحيبية النظيفة (Main Welcome View) --- */
+/* --- ميزة: الواجهة الترحيبية (Main Welcome UI) --- */
 function renderMain() {
     const content = document.getElementById('content');
     if (!content) return;
@@ -71,11 +72,10 @@ function renderMain() {
         en: { t: 'Welcome to our Cafe', b: 'View Menu' } 
     };
     
-    // قمنا بحذف كود وسم الصورة تماماً بناءً على طلبك ليعتمد الهيكل بالكامل على الخلفية المحددة في index.html
     content.innerHTML = `
         <div class="text-center p-6 space-y-6">
-            <h1 class="text-3xl font-bold text-gray-800 drop-shadow-sm transition-all">${texts[currentLang].t}</h1>
-            <button onclick="showCategories()" class="bg-blue-600 text-white px-12 py-4 rounded-full font-bold shadow-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all duration-200">
+            <h1 class="text-3xl font-bold text-gray-800">${texts[currentLang].t}</h1>
+            <button onclick="showCategories()" class="bg-blue-600 text-white px-12 py-4 rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all">
                 ${texts[currentLang].b}
             </button>
         </div>
@@ -85,18 +85,18 @@ function renderMain() {
     if (backBtn) backBtn.classList.add('hidden');
 }
 
-/* --- ميزة: منطق التنقل المستقر (Bulletproof Navigation Logic) --- */
+/* --- ميزة: منطق التنقل ومسارات الأقسام الفرعية (Navigation Logic) --- */
 function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // جلب الفئات الفريدة حسب اللغة النشطة وتفادي الفراغات
+    // استخراج الفئات الرئيسية بناءً على اللغة المحددة
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr).filter(Boolean))];
     
     content.innerHTML = cats.map(c => `
-        <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all hover:translate-y-[-2px]" onclick="renderSub('${c.replace(/'/g, "\\'")}')">
+        <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderSub('${c.replace(/'/g, "\\'")}')">
             <span class="font-bold text-lg text-gray-800">${c}</span>
-            <span class="text-gray-400 text-sm">➡️</span>
+            <span class="text-gray-400 text-sm">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
         </div>
     `).join('');
     
@@ -107,22 +107,20 @@ function renderSub(catName) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // فلترة المنتجات التي تنتمي للفئة المختارة بدقة تامة
+    // فلترة دقيقة لمطابقة الفئة الحالية باللغة الحالية أو الفرنسية كاحتياط
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
-    
-    // استخراج المجموعات الفرعية (SubCategories) الصالحة فقط وتجاهل الدش وعلامات "-"
     const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
     
-    // العمارة الهندسية الذكية لزر الرجوع: إذا قفزنا مباشرة للأصناف، نمرر المعيار الصريح
+    // إذا كان القسم لا يحتوي على فروع فرعية (مثل Boisson chaude)، انتقل للأصناف فوراً وبثبات
     if (subs.length === 0) {
         renderItems(catName, "", false);
         return;
     }
     
     content.innerHTML = subs.map(s => `
-        <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all hover:translate-y-[-2px]" onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${s.replace(/'/g, "\\'")}', true)">
+        <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${s.replace(/'/g, "\\'")}', true)">
             <span class="font-bold text-lg text-gray-800">${s}</span>
-            <span class="text-gray-400 text-sm">➡️</span>
+            <span class="text-gray-400 text-sm">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
         </div>
     `).join('');
     
@@ -133,7 +131,6 @@ function renderItems(catName, sub, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // جلب المنتجات بناءً على الفئة الرئيسية والفرعية (إن وجدت)
     const items = menuData.filter(i => 
         (i[`cat_${currentLang}`] || i.cat_fr) === catName && 
         (sub === "" ? (!i.sub || i.sub === '-') : i.sub === sub)
@@ -146,20 +143,18 @@ function renderItems(catName, sub, hasParentSub) {
         </div>
     `).join('');
 
-    // تحديث زر الرجوع بناءً على مسار المستخدم الصريح لضمان عدم حدوث Loop لانهائي
+    // حل مشكلة زر الرجوع بشكل حاسم ذكي بناءً على وجود الأقسام الفرعية الأصلية
     updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
 }
 
-/* --- ميزة: الدوال المساعدة وتحسين الـ UI (Helper Utilities) --- */
+/* --- ميزة: تحديث زر الرجوع المتناسق (Helper) --- */
 function updateBackButton(callback) {
     const btn = document.getElementById('backBtn');
     if (!btn) return;
     
     btn.classList.remove('hidden');
-    // إضفاء طابع لغوي سليم لزر الرجوع حسب الواجهة المحددة
     btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
     btn.onclick = callback;
 }
 
-// إطلاق التطبيق عند الجاهزية
 init();
