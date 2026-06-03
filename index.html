@@ -6,18 +6,29 @@
     <title>Menu Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .card { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .card:hover { background: #e5e7eb; }
+        /* إعدادات الخلفية */
+        body { margin: 0; padding: 0; }
+        #bg-image {
+            background-image: url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1920');
+            background-size: cover;
+            background-position: center;
+        }
+        /* تنسيق البطاقات الشفافة */
+        .card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(5px); padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .card:hover { background: rgba(255, 255, 255, 0.9); }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-xl p-4">
+<body class="bg-gray-900 font-sans">
+    
+    <div id="bg-image" class="fixed inset-0 opacity-50 z-0"></div>
+    
+    <div id="app" class="relative max-w-md mx-auto min-h-screen bg-white/80 shadow-2xl p-4 z-10">
         
         <div class="flex justify-between items-center mb-6">
-            <button id="backBtn" class="hidden bg-gray-200 px-4 py-2 rounded-lg font-bold z-50">⬅</button>
+            <button id="backBtn" class="hidden bg-gray-800 text-white px-4 py-2 rounded-lg font-bold z-50">⬅</button>
             
             <div class="relative z-50 ml-auto">
-                <button onclick="toggleLangMenu()" class="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm flex items-center justify-center text-2xl">
+                <button onclick="toggleLangMenu()" class="w-12 h-12 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-2xl bg-white">
                     <span id="currentFlag">🇫🇷</span>
                 </button>
                 <div id="langMenu" class="hidden absolute top-14 right-0 bg-white shadow-2xl rounded-xl p-2 border">
@@ -30,6 +41,7 @@
 
         <div id="content" class="grid gap-3"></div>
     </div>
+    
     <script src="app.js"></script>
 </body>
 </html>
