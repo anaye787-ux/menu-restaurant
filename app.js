@@ -1,7 +1,7 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWMvgKogUkg2pgt7r_jMJ4BVVBATNXy1g_OKZDBKKwryAevaJE1O6NekbKg0F7YZL0K/pub?output=csv';
 
 let menuData = [];
-let currentLang = 'fr'; // اللغة الافتراضية
+let currentLang = 'fr';
 
 async function init() {
     try {
@@ -27,15 +27,20 @@ function setLanguage(lang) {
 
 function renderMain() {
     const content = document.getElementById('content');
+    const welcomeTexts = {
+        ar: { title: 'مرحباً بكم في مقهانا', btn: 'عرض القائمة' },
+        fr: { title: 'Bienvenue chez nous', btn: 'Voir le Menu' },
+        en: { title: 'Welcome to our Cafe', btn: 'View Menu' }
+    };
+    
     content.innerHTML = `
-        <div class="flex justify-center gap-2 mb-4">
-            <button onclick="setLanguage('ar')" class="px-3 py-1 bg-gray-200 rounded">AR</button>
-            <button onclick="setLanguage('fr')" class="px-3 py-1 bg-gray-200 rounded">FR</button>
-            <button onclick="setLanguage('en')" class="px-3 py-1 bg-gray-200 rounded">EN</button>
-        </div>
         <div id="welcome-screen" class="text-center p-6">
-            <h1 class="text-2xl font-bold mb-4">${currentLang === 'ar' ? 'مرحباً بكم' : 'Bienvenue'}</h1>
-            <button onclick="showCategories()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold">Menu</button>
+            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=500" 
+                 class="w-full h-64 object-cover rounded-2xl mb-6 shadow-lg">
+            <h1 class="text-3xl font-bold mb-6 text-gray-800">${welcomeTexts[currentLang].title}</h1>
+            <button onclick="showCategories()" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold shadow-xl hover:bg-blue-700 transition-all">
+                ${welcomeTexts[currentLang].btn}
+            </button>
         </div>
     `;
     document.getElementById('backBtn').classList.add('hidden');
@@ -46,13 +51,13 @@ function showCategories() {
     const content = document.getElementById('content');
     content.innerHTML = cats.map(c => `<div class="card" onclick="renderSub('${c}')"><span class="font-bold text-lg">${c}</span></div>`).join('');
     document.getElementById('backBtn').classList.remove('hidden');
+    document.getElementById('backBtn').innerHTML = currentLang === 'ar' ? 'رجوع ⬅' : '⬅ Retour';
     document.getElementById('backBtn').onclick = renderMain;
 }
 
 function renderSub(catName) {
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
     const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
-    
     if (subs.length === 0) { renderItems(catName, ""); return; }
     
     const content = document.getElementById('content');
