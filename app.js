@@ -1,3 +1,8 @@
+/**
+ * @file app.js
+ * @description النسخة المستقرة النهائية - ترتيب وعرض الأعمدة ديناميكياً 100% حسب اللغة المحددة
+ */
+
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWMvgKogUkg2pgt7r_jMJ4BVVBATNXy1g_OKZDBKKwryAevaJE1O6NekbKg0F7YZL0K/pub?output=csv';
 
 let menuData = [];
@@ -13,7 +18,6 @@ async function init() {
         const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
         menuData = rows.map(row => {
-            // دالة احترافية لتقسيم السطر بدقة وحماية الخلايا التي تحتوي على مسافات أو نصوص مركبّة
             let cols = [];
             let insideQuote = false;
             let currentCell = '';
@@ -21,7 +25,7 @@ async function init() {
             for (let i = 0; i < row.length; i++) {
                 let char = row[i];
                 if (char === '"') {
-                    insideQuote = !insideQuote; // تخطي علامات التنصيص داخل النصوص
+                    insideQuote = !insideQuote;
                 } else if (char === ',' && !insideQuote) {
                     cols.push(currentCell);
                     currentCell = '';
@@ -29,7 +33,7 @@ async function init() {
                     currentCell += char;
                 }
             }
-            cols.push(currentCell); // إضافة الخلية الأخيرة
+            cols.push(currentCell);
 
             const clean = (val) => val ? val.trim().replace(/^"|"$/g, '').trim() : '';
             
@@ -102,8 +106,8 @@ function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // استخراج الفئات الرئيسية الفريدة فقط حسب اللغة النشطة
-    const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr).filter(Boolean))];
+    // إصلاح: استخراج الفئات المترجمة الحقيقية بناءً على اللغة النشطة فوراً
+    const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`]).filter(Boolean))];
     
     content.innerHTML = cats.map(c => `
         <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderSub('${c.replace(/'/g, "\\'")}')">
@@ -119,11 +123,11 @@ function renderSub(catName) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // فلترة المنتجات بناءً على مطابقة الفئة الرئيسية المختارة
-    const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
+    // فلترة المنتجات التي تطابق الفئة المختارة باللغة الحالية
+    const items = menuData.filter(i => i[`cat_${currentLang}`] === catName);
     
-    // استخراج الأقسام الفرعية المقابلة للغة النشطة (sub_ar, sub_fr, sub_en)
-    const subs = [...new Set(items.map(i => i[`sub_${currentLang}`] || i.sub_fr).filter(s => s && s !== '-'))];
+    // إصلاح: استخراج الأقسام الفرعية المرتبة والمترجمة للغة الحالية حصراً
+    const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
     // إذا كان القسم فارغاً من الفرعيات (مثل مشروبات سخونة) نذهب للأصناف فوراً وبثبات
     if (subs.length === 0) {
@@ -132,11 +136,8 @@ function renderSub(catName) {
     }
     
     content.innerHTML = subs.map(s => {
-        // نحدد المرجع الفرنسي للقسم الفرعي لضمان بقاء الفلترة دقيقة داخل الذاكرة
-        const referenceSubFR = items.find(i => (i[`sub_${currentLang}`] || i.sub_fr) === s)?.sub_fr || s;
-        
         return `
-            <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${referenceSubFR.replace(/'/g, "\\'")}', true)">
+            <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${s.replace(/'/g, "\\'")}', true)">
                 <span class="font-bold text-lg text-gray-800">${s}</span>
                 <span class="text-gray-400 text-sm">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
             </div>
@@ -146,19 +147,19 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-function renderItems(catName, subFR, hasParentSub) {
+function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // جلب المنتجات بناءً على الفئة الرئيسية والقسم الفرعي الفرنسي المرجعي
+    // جلب المنتجات بناءً على مطابقة الفئة الحالية والقسم الفرعي باللغة الحالية بدقة تامة
     const items = menuData.filter(i => 
-        (i[`cat_${currentLang}`] || i.cat_fr) === catName && 
-        (subFR === "" ? (!i.sub_fr || i.sub_fr === '-') : i.sub_fr === subFR)
+        i[`cat_${currentLang}`] === catName && 
+        (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName)
     );
     
     content.innerHTML = items.map(i => `
         <div class="card flex justify-between items-center bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20">
-            <span class="font-bold text-gray-800">${i[`name_${currentLang}`] || i.name_fr}</span>
+            <span class="font-bold text-gray-800">${i[`name_${currentLang}`]}</span>
             <span class="text-green-700 font-extrabold px-3 py-1 bg-green-50 rounded-full text-md border border-green-100">${i.price} MAD</span>
         </div>
     `).join('');
