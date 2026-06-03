@@ -1,14 +1,9 @@
-/**
- * @file app.js
- * @description كود المنيو الرقمي الشامل والمحدث - متوافق بالكامل مع هيكل الـ 11 عموداً والأقسام الفرعية المقسمة لغوياً
- */
-
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWMvgKogUkg2pgt7r_jMJ4BVVBATNXy1g_OKZDBKKwryAevaJE1O6NekbKg0F7YZL0K/pub?output=csv';
 
 let menuData = [];
 let currentLang = 'fr';
 
-/* --- ميزة: جلب البيانات (Data Fetching) --- */
+/* --- ميزة: جلب البيانات بدقة هندسية عالية (Robust Data Fetching) --- */
 async function init() {
     try {
         const res = await fetch(CSV_URL);
@@ -18,22 +13,24 @@ async function init() {
         const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
         menuData = rows.map(row => {
-            // تقسيم السطر بناءً على الفواصل مع مراعاة النصوص
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            const clean = (val) => val ? val.trim().replace(/^"|"$/g, '') : '';
+            // حل المشكلة: Regex يضمن تقسيم السطر لـ 11 عموداً بدقة تامة حتى لو كانت هناك خلايا فارغة متتالية
+            const cols = row.match(/(".*?"|[^",]*)(?=\s*,|\s*$)/g) || [];
+            
+            // تنظيف الحقول من الفراغات وعلامات التنصيص الزائدة
+            const clean = (val) => val ? val.trim().replace(/^"|"$/g, '').trim() : '';
             
             return {
-                cat_ar:  clean(cols[0]),  // العمود A (Category_AR)
-                cat_fr:  clean(cols[1]),  // العمود B (Category_FR)
-                sub_ar:  clean(cols[2]),  // العمود C (SubCategory_AR)
-                sub_fr:  clean(cols[3]),  // العمود D (SubCategory_FR)
-                sub_en:  clean(cols[4]),  // العمود E (SubCategory_EN)
-                cat_en:  clean(cols[5]),  // العمود F (Category_EN)
-                name_ar: clean(cols[6]),  // العمود G (Item_Name_AR)
-                name_fr: clean(cols[7]),  // العمود H (Item_Name_FR)
-                name_en: clean(cols[8]),  // العمود I (Item_Name_EN)
-                price:   clean(cols[9]),  // العمود J (Price)
-                image:   clean(cols[10])  // العمود K (ImageURL)
+                cat_ar:  clean(cols[0]),  // A: Category_AR
+                cat_fr:  clean(cols[1]),  // B: Category_FR
+                sub_ar:  clean(cols[2]),  // C: SubCategory_AR
+                sub_fr:  clean(cols[3]),  // D: SubCategory_FR
+                sub_en:  clean(cols[4]),  // E: SubCategory_EN
+                cat_en:  clean(cols[5]),  // F: Category_EN
+                name_ar: clean(cols[6]),  // G: Item_Name_AR
+                name_fr: clean(cols[7]),  // H: Item_Name_FR
+                name_en: clean(cols[8]),  // I: Item_Name_EN
+                price:   clean(cols[9]),  // J: Price
+                image:   clean(cols[10])  // K: ImageURL
             };
         }).filter(item => item.cat_fr || item.cat_ar);
         
@@ -44,7 +41,7 @@ async function init() {
     }
 }
 
-/* --- ميزة: إدارة اللغات (Language Management) --- */
+/* --- ميزة: إدارة اللغات والاتجاهات (Language Management) --- */
 function toggleLangMenu() {
     const menu = document.getElementById('langMenu');
     if (menu) menu.classList.toggle('hidden');
@@ -86,12 +83,11 @@ function renderMain() {
     if (backBtn) backBtn.classList.add('hidden');
 }
 
-/* --- ميزة: منطق التنقل ومسارات الأقسام الفرعية (Navigation Logic) --- */
+/* --- ميزة: منطق التنقل المستقر (Navigation Logic) --- */
 function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // استخراج الفئات الرئيسية بناءً على اللغة النشطة والاحتياط بالفرنسية
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr).filter(Boolean))];
     
     content.innerHTML = cats.map(c => `
@@ -108,20 +104,16 @@ function renderSub(catName) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // فلترة المنتجات بناءً على الفئة المختارة باللغة الحالية أو الاحتياط بالفرنسية
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
-    
-    // إصلاح: قراءة حقل القسم الفرعي بناءً على اللغة النشطة (sub_ar, sub_fr, sub_en)
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`] || i.sub_fr).filter(s => s && s !== '-'))];
     
-    // إذا كان القسم فارغاً من الفرعيات (مثل المشروبات) ننتقل للأصناف مباشرة
+    // إذا كان القسم فارغاً تماماً من الفرعيات (مثل أسطر المشروبات) نمرر البيانات مباشرة للأصناف
     if (subs.length === 0) {
         renderItems(catName, "", false);
         return;
     }
     
     content.innerHTML = subs.map(s => {
-        // نحدد المرجع الفرعي الفرنسي المقابل لهذا الاسم لضمان استقرار دالة الفلترة في الخطوة التالية
         const referenceSubFR = items.find(i => (i[`sub_${currentLang}`] || i.sub_fr) === s)?.sub_fr || s;
         
         return `
@@ -139,7 +131,6 @@ function renderItems(catName, subFR, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // جلب الأصناف من خلال مطابقة دقيقة للفئة الرئيسية والقسم الفرعي المرجعي الفرنسي
     const items = menuData.filter(i => 
         (i[`cat_${currentLang}`] || i.cat_fr) === catName && 
         (subFR === "" ? (!i.sub_fr || i.sub_fr === '-') : i.sub_fr === subFR)
@@ -152,7 +143,6 @@ function renderItems(catName, subFR, hasParentSub) {
         </div>
     `).join('');
 
-    // تحديث زر الرجوع المتناسق
     updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
 }
 
