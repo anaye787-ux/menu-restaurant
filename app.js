@@ -69,21 +69,24 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-function renderItems(catName, sub) {
-    const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName && (i.sub === sub || !i.sub));
-    const content = document.getElementById('content');
-    content.innerHTML = items.map(i => `
-        <div class="card flex justify-between items-center">
-            <span class="font-bold">${i[`name_${currentLang}`] || i.name_fr}</span>
-            <span class="text-green-700 font-bold">${i.price} MAD</span>
-        </div>
-    `).join('');
+function renderSub(catName) {
+    const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
+    const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
     
-    // زر الرجوع ذكي: إذا كانت هناك تصنيفات فرعية يعود لها، وإلا يعود للتصنيفات الرئيسية
-    updateBackButton(() => {
-        const subs = [...new Set(menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName).map(i => i.sub).filter(s => s && s !== '-'))];
-        subs.length > 0 ? renderSub(catName) : showCategories();
-    });
+    // إذا لم تكن هناك أقسام فرعية، نذهب مباشرة للأصناف
+    if (subs.length === 0) {
+        renderItems(catName, ""); 
+        // التعديل هنا: نقوم بتحديث زر الرجوع ليعود للقائمة الرئيسية
+        updateBackButton(showCategories); 
+        return;
+    }
+    
+    // إذا كانت هناك أقسام فرعية
+    const content = document.getElementById('content');
+    content.innerHTML = subs.map(s => `<div class="card" onclick="renderItems('${catName}', '${s}')"><span class="font-bold text-lg">${s}</span></div>`).join('');
+    
+    // زر الرجوع يعود للقائمة الرئيسية
+    updateBackButton(showCategories);
 }
 
 /* --- ميزة: المساعدة (Helper Functions) --- */
