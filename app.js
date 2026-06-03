@@ -20,27 +20,24 @@ async function init() {
     } catch (err) { console.error("Error:", err); }
 }
 
-function setLanguage(lang) {
+function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('hidden'); }
+
+function changeLanguage(lang, flag) {
     currentLang = lang;
+    document.getElementById('currentFlag').innerText = flag;
+    document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+    toggleLangMenu();
     renderMain();
 }
 
 function renderMain() {
     const content = document.getElementById('content');
-    const welcomeTexts = {
-        ar: { title: 'مرحباً بكم في مقهانا', btn: 'عرض القائمة' },
-        fr: { title: 'Bienvenue chez nous', btn: 'Voir le Menu' },
-        en: { title: 'Welcome to our Cafe', btn: 'View Menu' }
-    };
-    
+    const texts = { ar: {t:'مرحباً بكم', b:'عرض القائمة'}, fr: {t:'Bienvenue', b:'Voir le Menu'}, en: {t:'Welcome', b:'View Menu'} };
     content.innerHTML = `
-        <div id="welcome-screen" class="text-center p-6">
-            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=500" 
-                 class="w-full h-64 object-cover rounded-2xl mb-6 shadow-lg">
-            <h1 class="text-3xl font-bold mb-6 text-gray-800">${welcomeTexts[currentLang].title}</h1>
-            <button onclick="showCategories()" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold shadow-xl hover:bg-blue-700 transition-all">
-                ${welcomeTexts[currentLang].btn}
-            </button>
+        <div class="text-center p-6">
+            <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=500" class="w-full h-64 object-cover rounded-2xl mb-6 shadow-lg">
+            <h1 class="text-3xl font-bold mb-6">${texts[currentLang].t}</h1>
+            <button onclick="showCategories()" class="bg-blue-600 text-white px-10 py-4 rounded-full font-bold shadow-xl">${texts[currentLang].b}</button>
         </div>
     `;
     document.getElementById('backBtn').classList.add('hidden');
@@ -50,14 +47,17 @@ function showCategories() {
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr))];
     const content = document.getElementById('content');
     content.innerHTML = cats.map(c => `<div class="card" onclick="renderSub('${c}')"><span class="font-bold text-lg">${c}</span></div>`).join('');
-    document.getElementById('backBtn').classList.remove('hidden');
-    document.getElementById('backBtn').innerHTML = currentLang === 'ar' ? 'رجوع ⬅' : '⬅ Retour';
-    document.getElementById('backBtn').onclick = renderMain;
+    
+    const btn = document.getElementById('backBtn');
+    btn.classList.remove('hidden');
+    btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
+    btn.onclick = renderMain;
 }
 
 function renderSub(catName) {
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
     const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
+    
     if (subs.length === 0) { renderItems(catName, ""); return; }
     
     const content = document.getElementById('content');
@@ -69,7 +69,7 @@ function renderItems(catName, sub) {
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName && (i.sub === sub || !i.sub));
     const content = document.getElementById('content');
     content.innerHTML = items.map(i => `
-        <div class="card">
+        <div class="card flex justify-between">
             <span class="font-bold">${i[`name_${currentLang}`] || i.name_fr}</span>
             <span class="text-green-600 font-bold">${i.price} MAD</span>
         </div>
