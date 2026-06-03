@@ -1,3 +1,8 @@
+/**
+ * @file app.js
+ * @description كود المنيو الرقمي الشامل والمحدث - متوافق بالكامل مع هيكل الـ 11 عموداً والأقسام الفرعية المقسمة لغوياً
+ */
+
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWMvgKogUkg2pgt7r_jMJ4BVVBATNXy1g_OKZDBKKwryAevaJE1O6NekbKg0F7YZL0K/pub?output=csv';
 
 let menuData = [];
@@ -12,9 +17,9 @@ async function init() {
         const text = await res.text();
         const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
-   menuData = rows.map(row => {
-            // تقسيم السطر بناءً على الفواصل
-            const cols = row.split(',');
+        menuData = rows.map(row => {
+            // تقسيم السطر بناءً على الفواصل مع مراعاة النصوص
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
             const clean = (val) => val ? val.trim().replace(/^"|"$/g, '') : '';
             
             return {
@@ -86,7 +91,7 @@ function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // استخراج الفئات الرئيسية بناءً على اللغة النشطة
+    // استخراج الفئات الرئيسية بناءً على اللغة النشطة والاحتياط بالفرنسية
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`] || i.cat_fr).filter(Boolean))];
     
     content.innerHTML = cats.map(c => `
@@ -103,33 +108,41 @@ function renderSub(catName) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // فلترة المنتجات بناءً على الفئة المختارة
+    // فلترة المنتجات بناءً على الفئة المختارة باللغة الحالية أو الاحتياط بالفرنسية
     const items = menuData.filter(i => (i[`cat_${currentLang}`] || i.cat_fr) === catName);
-    const subs = [...new Set(items.map(i => i.sub).filter(s => s && s !== '-'))];
     
-    // إذا كان القسم فارغاً من الفرعيات (مثل مشروب ساخن ومشروب بارد) ننتقل للأصناف مباشرة
+    // إصلاح: قراءة حقل القسم الفرعي بناءً على اللغة النشطة (sub_ar, sub_fr, sub_en)
+    const subs = [...new Set(items.map(i => i[`sub_${currentLang}`] || i.sub_fr).filter(s => s && s !== '-'))];
+    
+    // إذا كان القسم فارغاً من الفرعيات (مثل المشروبات) ننتقل للأصناف مباشرة
     if (subs.length === 0) {
         renderItems(catName, "", false);
         return;
     }
     
-    content.innerHTML = subs.map(s => `
-        <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${s.replace(/'/g, "\\'")}', true)">
-            <span class="font-bold text-lg text-gray-800">${s}</span>
-            <span class="text-gray-400 text-sm">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
-        </div>
-    `).join('');
+    content.innerHTML = subs.map(s => {
+        // نحدد المرجع الفرعي الفرنسي المقابل لهذا الاسم لضمان استقرار دالة الفلترة في الخطوة التالية
+        const referenceSubFR = items.find(i => (i[`sub_${currentLang}`] || i.sub_fr) === s)?.sub_fr || s;
+        
+        return `
+            <div class="card flex justify-between items-center bg-white/70 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/20 transition-all" onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${referenceSubFR.replace(/'/g, "\\'")}', true)">
+                <span class="font-bold text-lg text-gray-800">${s}</span>
+                <span class="text-gray-400 text-sm">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
+            </div>
+        `;
+    }).join('');
     
     updateBackButton(showCategories);
 }
 
-function renderItems(catName, sub, hasParentSub) {
+function renderItems(catName, subFR, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
+    // جلب الأصناف من خلال مطابقة دقيقة للفئة الرئيسية والقسم الفرعي المرجعي الفرنسي
     const items = menuData.filter(i => 
         (i[`cat_${currentLang}`] || i.cat_fr) === catName && 
-        (sub === "" ? (!i.sub || i.sub === '-') : i.sub === sub)
+        (subFR === "" ? (!i.sub_fr || i.sub_fr === '-') : i.sub_fr === subFR)
     );
     
     content.innerHTML = items.map(i => `
@@ -139,7 +152,7 @@ function renderItems(catName, sub, hasParentSub) {
         </div>
     `).join('');
 
-    // تحديث زر الرجوع
+    // تحديث زر الرجوع المتناسق
     updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
 }
 
