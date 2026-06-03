@@ -12,24 +12,25 @@ async function init() {
         const text = await res.text();
         const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
-        menuData = rows.map(row => {
-            // تقسيم السطر بشكل مباشر وبسيط بناءً على الفواصل لضمان عدم سقوط أي كلمة عربية
+   menuData = rows.map(row => {
+            // تقسيم السطر بناءً على الفواصل
             const cols = row.split(',');
-            
             const clean = (val) => val ? val.trim().replace(/^"|"$/g, '') : '';
             
             return {
-                cat_ar:  clean(cols[0]), // العمود A (Category_AR)
-                cat_fr:  clean(cols[1]), // العمود B (Category_FR)
-                sub:     clean(cols[2]), // العمود C (SubCategory)
-                cat_en:  clean(cols[3]), // العمود D (Category_EN)
-                name_ar: clean(cols[4]), // العمود E (Item_Name_AR)
-                name_fr: clean(cols[5]), // العمود F (Item_Name_FR)
-                name_en: clean(cols[6]), // العمود G (Item_Name_EN)
-                price:   clean(cols[7]), // العمود H (Price)
-                image:   clean(cols[8])  // العمود I (ImageURL)
+                cat_ar:  clean(cols[0]),  // العمود A (Category_AR)
+                cat_fr:  clean(cols[1]),  // العمود B (Category_FR)
+                sub_ar:  clean(cols[2]),  // العمود C (SubCategory_AR)
+                sub_fr:  clean(cols[3]),  // العمود D (SubCategory_FR)
+                sub_en:  clean(cols[4]),  // العمود E (SubCategory_EN)
+                cat_en:  clean(cols[5]),  // العمود F (Category_EN)
+                name_ar: clean(cols[6]),  // العمود G (Item_Name_AR)
+                name_fr: clean(cols[7]),  // العمود H (Item_Name_FR)
+                name_en: clean(cols[8]),  // العمود I (Item_Name_EN)
+                price:   clean(cols[9]),  // العمود J (Price)
+                image:   clean(cols[10])  // العمود K (ImageURL)
             };
-        }).filter(item => item.cat_fr || item.cat_ar); // يضمن مرور السطور سواء كتبت بالعربي أو الفرنسي
+        }).filter(item => item.cat_fr || item.cat_ar);
         
         renderMain();
     } catch (err) {
