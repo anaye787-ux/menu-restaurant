@@ -5,15 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        .card { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
+        .card:hover { background: #e5e7eb; }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans">
     <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-xl p-4">
         
-        <div class="flex justify-center gap-4 mb-6">
-            <button onclick="setLanguage('ar'); document.documentElement.dir='rtl';" class="text-2xl hover:scale-110 transition-transform">🇲🇦</button>
-            <button onclick="setLanguage('fr'); document.documentElement.dir='ltr';" class="text-2xl hover:scale-110 transition-transform">🇫🇷</button>
-            <button onclick="setLanguage('en'); document.documentElement.dir='ltr';" class="text-2xl hover:scale-110 transition-transform">🇺🇸</button>
+        <div class="relative flex justify-end p-2 mb-4">
+            <button onclick="toggleLangMenu()" class="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm flex items-center justify-center text-2xl">
+                <span id="currentFlag">🇫🇷</span>
+            </button>
+            <div id="langMenu" class="hidden absolute top-16 right-0 bg-white shadow-2xl rounded-xl p-2 z-50 border">
+                <button onclick="changeLanguage('ar', '🇲🇦')" class="block p-2 text-2xl">🇲🇦</button>
+                <button onclick="changeLanguage('fr', '🇫🇷')" class="block p-2 text-2xl">🇫🇷</button>
+                <button onclick="changeLanguage('en', '🇺🇸')" class="block p-2 text-2xl">🇺🇸</button>
+            </div>
         </div>
 
         <button id="backBtn" class="hidden mb-4 bg-gray-200 px-4 py-2 rounded-lg font-bold">⬅ Retour</button>
