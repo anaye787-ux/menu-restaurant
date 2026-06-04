@@ -1,6 +1,6 @@
 /**
  * @file ui.js
- * @description ملف إدارة الواجهات المطور - يدعم البطاقات البيضاء المنفصلة والصور المصغرة ذات الاتجاه الديناميكي
+ * @description ملف إدارة الواجهات المستقر - تم تحديث تنسيق السعر لنمط المطاعم الفاخرة الكلاسيكي
  */
 
 // دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
@@ -103,7 +103,7 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات الفردية بنمط البطاقات البيضاء المنفصلة والصور المصغرة الإجبارية الحجم
+// 4. عرض المنتجات الفردية بنمط البطاقات البيضاء المنفصلة وتنسيق التسعير الفاخر المطور
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
@@ -122,15 +122,18 @@ function renderItems(catName, subName, hasParentSub) {
             : '';
 
         return `
+            <!-- بطاقة بيضاء منفصلة لكل منتج تتماشى مع نموذجك الجديد ومحمية بالكامل -->
             <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-3 flex items-center justify-between mb-3 transition-all">
                 
+                <!-- حاوية الصورة والاسم: تتفاعل بمرونة (الصورة يساراً في EN/FR ويميناً في AR تلقائياً) -->
                 <div class="flex items-center gap-3">
                     ${imgTag}
                     <span class="font-bold text-gray-800 text-lg">${i[`name_${currentLang}`]}</span>
                 </div>
                 
-                <span class="text-gray-900 font-black text-base whitespace-nowrap pl-2 pr-2">
-                    ${i.price} <span class="text-xs font-bold text-gray-500">MAD</span>
+                <!-- ميزة: السعر الثابت الفخم على النمط الفندقي الكلاسيكي (تخفيف العملة وإبراز الرقم) -->
+                <span class="text-gray-900 font-black text-xl whitespace-nowrap pl-2 pr-2 flex items-center gap-1">
+                    ${i.price}<span class="text-[11px] font-normal text-gray-400 tracking-wide">MAD</span>
                 </span>
                 
             </div>
