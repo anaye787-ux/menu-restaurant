@@ -18,27 +18,14 @@ async function init() {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         
         const text = await res.text();
-        const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== '');
         
-        menuData = rows.map(row => {
-            let cols = [];
-            let insideQuote = false;
-            let currentCell = '';
-
-            for (let i = 0; i < row.length; i++) {
-                let char = row[i];
-                if (char === '"') {
-                    insideQuote = !insideQuote;
-                } else if (char === ',' && !insideQuote) {
-                    cols.push(currentCell);
-                    currentCell = '';
-                } else {
-                    currentCell += char;
-                }
-            }
-            cols.push(currentCell);
-
-            const clean = (val) => val ? val.trim().replace(/^"|"$/g, '').trim() : '';
+        // --- التحديث هنا: استخدام PapaParse بدلاً من المعالجة اليدوية ---
+        const parsedData = Papa.parse(text, { skipEmptyLines: true });
+        const rows = parsedData.data.slice(1); // تجاهل السطر الأول (العناوين)
+        
+        menuData = rows.map(cols => {
+            // الدالة المساعدة لتنظيف البيانات (مأخوذة من كودك)
+            const clean = (val) => val ? val.trim() : '';
             
             return {
                 cat_ar:  clean(cols[0]),  // A: Category_AR
@@ -61,7 +48,7 @@ async function init() {
     } catch (err) {
         console.error("Critical Error Initialization Failed:", err);
         
-        // نصوص رسالة الخطأ وزر المحاولة لتتناسب مع تعدد اللغات
+        // نصوص رسالة الخطأ وزر المحاولة لتتناسب مع تعدد اللغات (مأخوذة من كودك دون تعديل)
         const errorUI = {
             ar: { msg: 'عذراً، حدث خطأ في الاتصال. يرجى التحقق من الشبكة.', btn: 'إعادة المحاولة 🔄' },
             fr: { msg: 'Erreur de connexion. Veuillez vérifier votre réseau.', btn: 'Réessayer 🔄' },
@@ -72,7 +59,7 @@ async function init() {
 
         const content = document.getElementById('content');
         if (content) {
-            // رسم واجهة الخطأ مع زر إعادة المحاولة المرتبط بدالة init
+            // رسم واجهة الخطأ مع زر إعادة المحاولة المرتبط بدالة init (مأخوذة من كودك دون تعديل)
             content.innerHTML = `
                 <div class="flex flex-col items-center justify-center p-6 mt-12 text-center space-y-5 animate-[fadeIn_0.3s_ease-out]">
                     <div class="text-red-500 bg-red-50 p-4 rounded-full shadow-sm">
