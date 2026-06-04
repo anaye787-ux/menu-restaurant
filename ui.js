@@ -110,9 +110,9 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // التعديل المدقق: تم فرض مقاس w-10 h-10 ليصبح حجم الصورة كالأيقونة الصغيرة تماماً ولا يمدد البطاقة عمودياً
+        // ميزة الفرض الإجباري المصلحة: استبدال كلاس Tailwind بستايل مباشر مقفل ومقاوم للكاش
         const imgTag = i.image && i.image.trim() !== "" 
-            ? `<img src="${i.image}" class="w-10 h-10 object-cover rounded-lg flex-shrink-0" alt="">` 
+            ? `<img src="${i.image}" style="width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important;" class="object-cover rounded-lg flex-shrink-0" alt="">` 
             : '';
 
         return `
