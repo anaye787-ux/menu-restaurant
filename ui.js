@@ -1,6 +1,6 @@
 /**
  * @file ui.js
- * @description ملف إدارة الواجهات المستقر - متضمن الفئات المخصصة للبطاقات + ميزة البحث الذكي والتحميل الكسول
+ * @description ملف إدارة الواجهات المستقر - متضمن الفئات المخصصة للبطاقات + ميزة البحث الذكي والتحميل الكسول + ألوان الهوية (Brand)
  */
 
 // دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
@@ -23,8 +23,8 @@ function renderMain() {
     
     content.innerHTML = `
         <div class="text-center p-6 space-y-6">
-            <h1 class="text-3xl font-bold text-gray-800">${texts[currentLang].t}</h1>
-            <button onclick="showCategories()" class="bg-blue-600 text-white px-12 py-4 rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all">
+            <h1 class="text-3xl font-bold text-brand-dark">${texts[currentLang].t}</h1>
+            <button onclick="showCategories()" class="bg-brand text-white px-12 py-4 rounded-full font-bold shadow-lg hover:bg-opacity-90 transition-all">
                 ${texts[currentLang].b}
             </button>
         </div>
@@ -48,7 +48,7 @@ function showCategories() {
         const bgImage = catItems.find(i => i.image)?.image || '';
         
         return `
-            <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-gray-300 bg-cover bg-center" 
+            <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
                  onclick="renderSub('${c.replace(/'/g, "\\'")}')">
                 
@@ -86,7 +86,7 @@ function renderSub(catName) {
         const bgImage = subItems.find(i => i.image)?.image || '';
 
         return `
-            <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-gray-300 bg-cover bg-center" 
+            <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
                  onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${s.replace(/'/g, "\\'")}', true)">
                 
@@ -121,17 +121,17 @@ function renderItems(catName, subName, hasParentSub) {
             ? `<img src="${i.image}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
             : '';
 
-        // استخدام الفئة item-card-fixed كما هي لضمان عدم انتفاخ البطاقة
+        // استخدام الفئة item-card-fixed كما هي لضمان عدم انتفاخ البطاقة مع تأثير حواف بألوان الهوية
         return `
-            <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all">
+            <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
                 
                 <div class="flex items-center gap-3 h-full">
                     ${imgTag}
-                    <span class="font-bold text-gray-800 text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
+                    <span class="font-bold text-brand-dark text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
                 </div>
                 
-                <span class="text-gray-900 font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
-                    ${i.price}<span class="text-[11px] font-normal text-gray-400 tracking-wide">MAD</span>
+                <span class="text-brand font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
+                    ${i.price}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
                 </span>
                 
             </div>
@@ -233,12 +233,12 @@ function renderSearchResults(items, isFallback, query) {
     };
 
     if (items.length === 0) {
-        html = `<div id="searchIndicator" class="text-center text-gray-500 mt-12 p-4 bg-gray-50 rounded-xl border border-gray-200">
+        html = `<div id="searchIndicator" class="text-center text-brand-dark mt-12 p-4 bg-brand-light rounded-xl border border-brand/20">
                     <p class="font-medium">${emptyMsg[currentLang]}</p>
                 </div>`;
     } else {
         html = `
-            <div id="searchIndicator" class="mb-4 text-sm ${isFallback ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-blue-800 bg-blue-50 border-blue-200'} p-3 rounded-lg border">
+            <div id="searchIndicator" class="mb-4 text-sm ${isFallback ? 'text-brand-dark bg-brand-light border-brand/30' : 'text-brand bg-brand-light/50 border-brand/20'} p-3 rounded-lg border">
                 ${messages[currentLang]}
             </div>
         `;
@@ -248,13 +248,13 @@ function renderSearchResults(items, isFallback, query) {
                 : '';
 
             return `
-                <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all">
+                <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
                     <div class="flex items-center gap-3 h-full">
                         ${imgTag}
-                        <span class="font-bold text-gray-800 text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
+                        <span class="font-bold text-brand-dark text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
                     </div>
-                    <span class="text-gray-900 font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
-                        ${i.price}<span class="text-[11px] font-normal text-gray-400 tracking-wide">MAD</span>
+                    <span class="text-brand font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
+                        ${i.price}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
                     </span>
                 </div>
             `;
