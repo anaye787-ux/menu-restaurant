@@ -5,24 +5,19 @@ const sanitizeHTML = (str) => {
     return tempDiv.innerHTML;
 };
 
-// --- دالة مساعدة للتحكم في ظهور وإخفاء اللوجو ---
 function toggleLogo(show) {
     const logo = document.getElementById('mainLogo');
     if (!logo) return;
-    if (show) {
-        logo.classList.remove('hidden');
-    } else {
-        logo.classList.add('hidden');
-    }
+    if (show) logo.classList.remove('hidden');
+    else logo.classList.add('hidden');
 }
 
-// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
     const appWrapper = document.getElementById('app') || document.body;
     appWrapper.style.backgroundImage = '';
 }
 
-// 1. رسم الواجهة الترحيبية الرئيسية
+// 1. رسم الواجهة الترحيبية
 function renderMain() {
     resetGlobalBackground();
     toggleLogo(true);
@@ -54,7 +49,7 @@ function renderMain() {
     if (backBtn) backBtn.classList.add('hidden');
 }
 
-// 2. عرض الأقسام الرئيسية
+// 2. عرض الأقسام
 function showCategories() {
     resetGlobalBackground();
     toggleLogo(false);
@@ -107,7 +102,7 @@ function renderSub(catName) {
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
     if (subs.length === 0) {
-        renderItems(catName, "", false);
+        renderItems(catName, "", true);
         return;
     }
     
@@ -133,15 +128,15 @@ function renderSub(catName) {
     updateBackButton();
 }
 
-// 4. عرض المنتجات الفردية
+// 4. عرض المنتجات
 function renderItems(catName, subName, hasParentSub) {
     toggleLogo(false);
     
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة
-    if (history.state?.view !== 'items' || history.state?.sub !== subName) {
+    // تسجيل الحالة (سواء كان قادماً من Sub أو مباشرة من Cats)
+    if (history.state?.view !== 'items' || history.state?.cat !== catName || history.state?.sub !== subName) {
         history.pushState({ view: 'items', cat: catName, sub: subName }, '', '');
     }
 
@@ -156,9 +151,7 @@ function renderItems(catName, subName, hasParentSub) {
         const safeName = sanitizeHTML(i[`name_${currentLang}`]);
         const safePrice = sanitizeHTML(i.price);
 
-        const imgTag = safeImg.trim() !== "" 
-            ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` 
-            : '';
+        const imgTag = safeImg.trim() !== "" ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` : '';
 
         return `
             <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
@@ -175,7 +168,6 @@ function renderItems(catName, subName, hasParentSub) {
 
     updateBackButton();
 }
-
 /* =========================================
    ميزات البحث الذكي
    ========================================= */
