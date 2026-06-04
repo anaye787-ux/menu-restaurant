@@ -1,9 +1,3 @@
-/**
- * @file ui.js
- * @description ملف إدارة الواجهات المستقر - تم تحديث تنسيق السعر لنمط المطاعم الفاخرة الكلاسيكي
- */
-
-// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
     const appWrapper = document.getElementById('app') || document.body;
     appWrapper.style.backgroundImage = '';
@@ -103,7 +97,7 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات الفردية بنمط البطاقات البيضاء المنفصلة وتنسيق التسعير الفاخر المطور
+// 4. عرض المنتجات الفردية بنمط البطاقات البيضاء المنفصلة وتنسيق التسعير الفاخر المطور (نسخة مصلحة الحجم بالكامل)
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
@@ -116,22 +110,19 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // ميزة فحص الصورة: إذا كان للمنتج صورة في الجدول يتم تصغيرها بالقوة، وإذا لم توجد لا يتم رسم صندوق فارغ
+        // التعديل المدقق: تم فرض مقاس w-10 h-10 ليصبح حجم الصورة كالأيقونة الصغيرة تماماً ولا يمدد البطاقة عمودياً
         const imgTag = i.image && i.image.trim() !== "" 
-            ? `<img src="${i.image}" class="w-16 h-16 object-cover rounded-xl flex-shrink-0" alt="">` 
+            ? `<img src="${i.image}" class="w-10 h-10 object-cover rounded-lg flex-shrink-0" alt="">` 
             : '';
 
         return `
-            <!-- بطاقة بيضاء منفصلة لكل منتج تتماشى مع نموذجك الجديد ومحمية بالكامل -->
-            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-3 flex items-center justify-between mb-3 transition-all">
+            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-3 flex items-center justify-between mb-3 min-h-[64px] transition-all">
                 
-                <!-- حاوية الصورة والاسم: تتفاعل بمرونة (الصورة يساراً في EN/FR ويميناً في AR تلقائياً) -->
                 <div class="flex items-center gap-3">
                     ${imgTag}
-                    <span class="font-bold text-gray-800 text-lg">${i[`name_${currentLang}`]}</span>
+                    <span class="font-bold text-gray-800 text-lg flex items-center">${i[`name_${currentLang}`]}</span>
                 </div>
                 
-                <!-- ميزة: السعر الثابت الفخم على النمط الفندقي الكلاسيكي (تخفيف العملة وإبراز الرقم) -->
                 <span class="text-gray-900 font-black text-xl whitespace-nowrap pl-2 pr-2 flex items-center gap-1">
                     ${i.price}<span class="text-[11px] font-normal text-gray-400 tracking-wide">MAD</span>
                 </span>
