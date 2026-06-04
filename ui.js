@@ -1,9 +1,26 @@
+/**
+ * @file ui.js
+ * @description ملف إدارة الواجهات المستقر - متضمن الفئات المخصصة، ميزة البحث الذكي، ألوان الهوية، وإخفاء اللوجو ديناميكياً
+ */
+
+// --- ميزة الأمان (XSS Protection) ---
 const sanitizeHTML = (str) => {
     if (!str) return '';
     const tempDiv = document.createElement('div');
     tempDiv.textContent = str; // المتصفح يحول أي كود خبيث إلى نص عادي غير ضار
     return tempDiv.innerHTML;
 };
+
+// --- دالة مساعدة للتحكم في ظهور وإخفاء اللوجو ---
+function toggleLogo(show) {
+    const logo = document.getElementById('mainLogo');
+    if (!logo) return;
+    if (show) {
+        logo.classList.remove('hidden');
+    } else {
+        logo.classList.add('hidden');
+    }
+}
 
 // دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
@@ -14,6 +31,8 @@ function resetGlobalBackground() {
 // 1. رسم الواجهة الترحيبية الرئيسية
 function renderMain() {
     resetGlobalBackground();
+    toggleLogo(true); // إظهار اللوجو في الصفحة الرئيسية
+    
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -39,6 +58,8 @@ function renderMain() {
 // 2. عرض الأقسام الرئيسية بخلفية مصورة كاملة وتعتيم ذكي
 function showCategories() {
     resetGlobalBackground();
+    toggleLogo(false); // إخفاء اللوجو عند عرض الأقسام لتوفير المساحة
+    
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -71,6 +92,8 @@ function showCategories() {
 // 3. عرض الأقسام الفرعية بخلفية مصورة تابعة لها
 function renderSub(catName) {
     resetGlobalBackground();
+    toggleLogo(false); // إخفاء اللوجو عند عرض الأقسام الفرعية
+
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -109,6 +132,8 @@ function renderSub(catName) {
 
 // 4. عرض المنتجات الفردية بحجم بطاقات موحد
 function renderItems(catName, subName, hasParentSub) {
+    toggleLogo(false); // إخفاء اللوجو عند عرض قائمة الأطباق
+    
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -174,10 +199,10 @@ function performSearch(query) {
         return;
     }
 
-    // 1. استخدام محرك Fuse.js للبحث والتغاضي عن الأخطاء الإملائية (مثل عصر بدل عصير)
+    // 1. استخدام محرك Fuse.js للبحث والتغاضي عن الأخطاء الإملائية
     const options = {
         includeScore: true,
-        threshold: 0.4, // نسبة تسامح ممتازة للأخطاء الإملائية
+        threshold: 0.4, 
         keys: ['name_ar', 'name_fr', 'name_en', 'cat_ar', 'cat_fr']
     };
 
@@ -186,7 +211,7 @@ function performSearch(query) {
 
     let isFallback = false;
 
-    // 2. دمج القاموس الذكي القديم الخاص بك (لم نحذفه!) ليعمل كخطة بديلة إذا فشل Fuse.js
+    // 2. دمج القاموس الذكي 
     if (results.length === 0) {
         const smartDictionary = {
             'بانيني': ['طاكوس', 'شاورما', 'ساندويتش', 'tacos', 'sandwich'],
@@ -207,23 +232,22 @@ function performSearch(query) {
 
         if (fallbackKeywords.length > 0) {
             isFallback = true;
-            // استخدام Fuse.js مرة أخرى للبحث عن الكلمات البديلة المستخرجة من القاموس
             let fallbackResults = [];
             fallbackKeywords.forEach(kw => {
                 const kwResults = fuse.search(kw).map(res => res.item);
                 fallbackResults = fallbackResults.concat(kwResults);
             });
-            // إزالة النتائج المكررة
             results = [...new Set(fallbackResults)];
         }
     }
 
-    // إرسال الكلمة مطهرة برمجياً كحماية XSS
     renderSearchResults(results, isFallback, sanitizeHTML(q));
 }
 
 function renderSearchResults(items, isFallback, safeQuery) {
     resetGlobalBackground();
+    toggleLogo(false); // إخفاء اللوجو في صفحة البحث لضمان ظهور النتائج بوضوح
+    
     const content = document.getElementById('content');
     if (!content) return;
 
