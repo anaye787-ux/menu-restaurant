@@ -1,4 +1,17 @@
+/**
+ * @file ui.js
+ * @description ملف إدارة الواجهات المطور - يدعم البطاقات البيضاء المنفصلة والصور المصغرة ذات الاتجاه الديناميكي
+ */
+
+// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
+function resetGlobalBackground() {
+    const appWrapper = document.getElementById('app') || document.body;
+    appWrapper.style.backgroundImage = '';
+}
+
+// 1. رسم الواجهة الترحيبية الرئيسية
 function renderMain() {
+    resetGlobalBackground();
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -23,6 +36,7 @@ function renderMain() {
 
 // 2. عرض الأقسام الرئيسية بخلفية مصورة كاملة وتعتيم ذكي
 function showCategories() {
+    resetGlobalBackground();
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -53,6 +67,7 @@ function showCategories() {
 
 // 3. عرض الأقسام الفرعية بخلفية مصورة تابعة لها
 function renderSub(catName) {
+    resetGlobalBackground();
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -88,24 +103,39 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات الفردية بنمط النظافة والزجاج الشفاف (Glassmorphism) بدون صور تشتيتية
+// 4. عرض المنتجات الفردية بنمط البطاقات البيضاء المنفصلة والصور المصغرة الإجبارية الحجم
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تم تحديث الفلترة هنا فقط لتتجاهل الأسطر التي ليس بها اسم منتج حقيقي (مثل أسطر الصور 2 و 12 و 13)
+    // تصفية المنتجات مع تجاهل الأسطر المخصصة للصور فقط لتجنب أي أخطاء بصرية
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
         (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName) &&
         i[`name_${currentLang}`] && i[`name_${currentLang}`].trim() !== ""
     );
     
-    content.innerHTML = items.map(i => `
-        <div class="card-glass-item flex justify-between items-center p-4 rounded-xl transition-all">
-            <span class="font-bold text-gray-800 text-lg">${i[`name_${currentLang}`]}</span>
-            <span class="text-green-700 font-extrabold px-3 py-1 bg-green-50 rounded-full text-md border border-green-100">${i.price} MAD</span>
-        </div>
-    `).join('');
+    content.innerHTML = items.map(i => {
+        // ميزة فحص الصورة: إذا كان للمنتج صورة في الجدول يتم تصغيرها بالقوة، وإذا لم توجد لا يتم رسم صندوق فارغ
+        const imgTag = i.image && i.image.trim() !== "" 
+            ? `<img src="${i.image}" class="w-16 h-16 object-cover rounded-xl flex-shrink-0" alt="">` 
+            : '';
+
+        return `
+            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-3 flex items-center justify-between mb-3 transition-all">
+                
+                <div class="flex items-center gap-3">
+                    ${imgTag}
+                    <span class="font-bold text-gray-800 text-lg">${i[`name_${currentLang}`]}</span>
+                </div>
+                
+                <span class="text-gray-900 font-black text-base whitespace-nowrap pl-2 pr-2">
+                    ${i.price} <span class="text-xs font-bold text-gray-500">MAD</span>
+                </span>
+                
+            </div>
+        `;
+    }).join('');
 
     updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
 }
