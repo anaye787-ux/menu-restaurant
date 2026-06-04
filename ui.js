@@ -1,6 +1,6 @@
 /**
  * @file ui.js
- * @description ملف إدارة الواجهات المستقر - تم نقل الأنماط المضمنة إلى فئات CSS مخصصة لتوحيد الحجم نهائياً
+ * @description ملف إدارة الواجهات المستقر - متضمن الفئات المخصصة للبطاقات + ميزة البحث الذكي والتحميل الكسول
  */
 
 // دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
@@ -116,12 +116,12 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // استخدام الفئة item-img-fixed بدلاً من الستاين المضمن
+        // إضافة ميزة التحميل الكسول (loading="lazy") مع الاحتفاظ بالفئة item-img-fixed
         const imgTag = i.image && i.image.trim() !== "" 
-            ? `<img src="${i.image}" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
+            ? `<img src="${i.image}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
             : '';
 
-        // استخدام الفئة item-card-fixed بدلاً من الستايل المضمن لتوحيد حجم البطاقات
+        // استخدام الفئة item-card-fixed كما هي لضمان عدم انتفاخ البطاقة
         return `
             <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all">
                 
@@ -139,4 +139,134 @@ function renderItems(catName, subName, hasParentSub) {
     }).join('');
 
     updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
+}
+
+/* =========================================
+   ميزات البحث الذكي (Smart Fallback Search)
+   ========================================= */
+
+function toggleSearch() {
+    const container = document.getElementById('searchContainer');
+    const input = document.getElementById('searchInput');
+    
+    container.classList.toggle('hidden');
+    
+    if (!container.classList.contains('hidden')) {
+        input.focus();
+    } else {
+        input.value = ''; // تنظيف الحقل عند الإغلاق
+        if (document.getElementById('searchIndicator')) {
+            showCategories(); // العودة للأقسام إذا كنا في صفحة النتائج
+        }
+    }
+}
+
+function performSearch(query) {
+    const q = query.toLowerCase().trim();
+    if (!q) {
+        showCategories();
+        return;
+    }
+
+    // 1. البحث المباشر في الأسماء
+    let results = menuData.filter(i => 
+        (i.name_ar && i.name_ar.toLowerCase().includes(q)) ||
+        (i.name_fr && i.name_fr.toLowerCase().includes(q)) ||
+        (i.name_en && i.name_en.toLowerCase().includes(q))
+    );
+
+    let isFallback = false;
+
+    // 2. البحث الذكي (اقتراح بدائل) إذا كانت النتيجة 0
+    if (results.length === 0) {
+        // قاموس المرادفات
+        const smartDictionary = {
+            'بانيني': ['طاكوس', 'شاورما', 'ساندويتش', 'tacos', 'sandwich'],
+            'panini': ['tacos', 'sandwich', 'chawarma'],
+            'ليمون': ['عصير', 'برتقال', 'موهيتو', 'jus', 'مشروب'],
+            'citron': ['jus', 'orange', 'mojito'],
+            'عصير': ['jus', 'موهيتو', 'ليمون'],
+            'قهوة': ['كابتشينو', 'اسبريسو', 'cafe', 'coffee', 'latte']
+        };
+
+        let fallbackKeywords = [];
+        for (const key in smartDictionary) {
+            if (q.includes(key) || key.includes(q)) {
+                fallbackKeywords = fallbackKeywords.concat(smartDictionary[key]);
+            }
+        }
+
+        if (fallbackKeywords.length > 0) {
+            isFallback = true;
+            results = menuData.filter(i => {
+                return fallbackKeywords.some(kw => 
+                    (i.name_ar && i.name_ar.toLowerCase().includes(kw)) ||
+                    (i.name_fr && i.name_fr.toLowerCase().includes(kw)) ||
+                    (i.cat_ar && i.cat_ar.toLowerCase().includes(kw)) ||
+                    (i.cat_fr && i.cat_fr.toLowerCase().includes(kw))
+                );
+            });
+        }
+    }
+
+    renderSearchResults(results, isFallback, q);
+}
+
+function renderSearchResults(items, isFallback, query) {
+    resetGlobalBackground();
+    const content = document.getElementById('content');
+    if (!content) return;
+
+    let html = '';
+    
+    // واجهة رسائل تفاعلية حسب اللغة ونوع النتيجة
+    const messages = {
+        ar: isFallback ? `لم نعثر على "<b>${query}</b>"، لكن هذه الخيارات قد تعجبك:` : `نتائج البحث عن "<b>${query}</b>":`,
+        fr: isFallback ? `Nous n'avons pas trouvé "<b>${query}</b>", mais voici des alternatives :` : `Résultats pour "<b>${query}</b>":`,
+        en: isFallback ? `We didn't find "<b>${query}</b>", but you might like these:` : `Search results for "<b>${query}</b>":`
+    };
+
+    const emptyMsg = {
+        ar: 'عذراً، لم نجد أي أطباق مطابقة لبحثك.',
+        fr: 'Désolé, aucun plat ne correspond à votre recherche.',
+        en: 'Sorry, no items match your search.'
+    };
+
+    if (items.length === 0) {
+        html = `<div id="searchIndicator" class="text-center text-gray-500 mt-12 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <p class="font-medium">${emptyMsg[currentLang]}</p>
+                </div>`;
+    } else {
+        html = `
+            <div id="searchIndicator" class="mb-4 text-sm ${isFallback ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-blue-800 bg-blue-50 border-blue-200'} p-3 rounded-lg border">
+                ${messages[currentLang]}
+            </div>
+        `;
+        html += items.map(i => {
+            const imgTag = i.image && i.image.trim() !== "" 
+                ? `<img src="${i.image}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
+                : '';
+
+            return `
+                <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all">
+                    <div class="flex items-center gap-3 h-full">
+                        ${imgTag}
+                        <span class="font-bold text-gray-800 text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
+                    </div>
+                    <span class="text-gray-900 font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
+                        ${i.price}<span class="text-[11px] font-normal text-gray-400 tracking-wide">MAD</span>
+                    </span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    content.innerHTML = html;
+    
+    // زر الرجوع يعود دائماً للأقسام ويفك التركيز عن البحث
+    updateBackButton(() => {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchContainer').classList.add('hidden');
+        showCategories();
+    });
 }
