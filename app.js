@@ -1,7 +1,12 @@
 // --- مدير حالة التنقل ---
-// لا نحتاج لتخزين التاريخ في مصفوفة لأن المتصفح يقوم بذلك تلقائياً
-// المستمع أدناه هو المسؤول عن فك تشفير الحالة والعودة للخلف
 window.addEventListener('popstate', (event) => {
+    // 1. تنظيف حقل البحث دائماً عند التنقل بين الحالات
+    const searchInput = document.getElementById('searchInput');
+    const searchContainer = document.getElementById('searchContainer');
+    if (searchInput) searchInput.value = '';
+    if (searchContainer) searchContainer.classList.add('hidden');
+
+    // 2. فك تشفير الحالة والعودة للخلف
     if (event.state && event.state.view) {
         const { view, cat, sub } = event.state;
         
