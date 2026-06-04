@@ -1,34 +1,9 @@
-window.addEventListener('popstate', (event) => {
-    // 1. تنظيف حقل البحث دائماً عند التنقل بين الحالات
-    const searchInput = document.getElementById('searchInput');
-    const searchContainer = document.getElementById('searchContainer');
-    if (searchInput) searchInput.value = '';
-    if (searchContainer) searchContainer.classList.add('hidden');
-
-    // 2. فك تشفير الحالة والعودة للخلف بناءً على البيانات المخزنة
-    if (event.state && event.state.view) {
-        const { view, cat, sub, parent } = event.state;
-        
-        if (view === 'main') {
-            renderMain();
-        } else if (view === 'cats') {
-            showCategories();
-        } else if (view === 'sub') {
-            renderSub(cat);
-        } else if (view === 'items') {
-            // نستخدم القيمة المخزنة في parent لمعرفة كيفية العرض
-            renderItems(cat, sub, parent === 'sub');
-        }
-    } else {
-        renderMain();
-    }
-});
-
 function toggleLangMenu() {
     const menu = document.getElementById('langMenu');
     if (menu) menu.classList.toggle('hidden');
 }
 
+// معالجة تغيير اللغة والاتجاه الجغرافي للمنيو (RTL / LTR) بشكل ديناميكي كامل
 function changeLanguage(lang, flag) {
     currentLang = lang;
     const flagElem = document.getElementById('currentFlag');
@@ -38,23 +13,18 @@ function changeLanguage(lang, flag) {
     document.documentElement.lang = lang;
     
     toggleLangMenu();
-    
-    // عند تغيير اللغة نعيد ضبط الحالة لتجنب تداخل التاريخ
-    history.replaceState({ view: 'main' }, '', '');
     renderMain();
 }
 
-// تحديث الزر: أصبح الآن موحداً ولا يحتاج لـ callback
-function updateBackButton() {
+// تحديث ذكي ومستقر لزر الرجوع حسب وضعية التصفح واللغة الحالية
+function updateBackButton(callback) {
     const btn = document.getElementById('backBtn');
     if (!btn) return;
     
     btn.classList.remove('hidden');
     btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
-    
-    // الزر الآن يطلب من المتصفح تنفيذ حركة "الرجوع" الحقيقية فقط
-    btn.onclick = () => history.back();
+    btn.onclick = callback;
 }
 
-// إشارة البدء
+// إشارة البدء: انطلاق جلب البيانات فور تحميل الصفحة وسيرفرات جيت هاب
 init();
