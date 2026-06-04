@@ -1,6 +1,6 @@
 // --- مدير حالة التنقل ---
 window.addEventListener('popstate', (event) => {
-    // 1. تنظيف حقل البحث دائماً عند التنقل بين الحالات
+    // 1. تنظيف حقل البحث دائماً عند التنقل بين الحالات (زر الرجوع)
     const searchInput = document.getElementById('searchInput');
     const searchContainer = document.getElementById('searchContainer');
     if (searchInput) searchInput.value = '';
@@ -10,7 +10,6 @@ window.addEventListener('popstate', (event) => {
     if (event.state && event.state.view) {
         const { view, cat, sub } = event.state;
         
-        // تنفيذ دالة الرسم بناءً على الحالة المسترجعة
         if (view === 'main') {
             renderMain();
         } else if (view === 'cats') {
@@ -21,7 +20,6 @@ window.addEventListener('popstate', (event) => {
             renderItems(cat, sub, true);
         }
     } else {
-        // إذا لم توجد حالة (يعني المستخدم في الصفحة الأولى)، عد للرئيسية
         renderMain();
     }
 });
@@ -46,7 +44,7 @@ function changeLanguage(lang, flag) {
     renderMain();
 }
 
-// تحديث الزر: أصبح الآن بسيطاً ومباشراً
+// تحديث الزر: أصبح الآن موحداً ولا يحتاج لـ callback
 function updateBackButton() {
     const btn = document.getElementById('backBtn');
     if (!btn) return;
@@ -54,7 +52,7 @@ function updateBackButton() {
     btn.classList.remove('hidden');
     btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
     
-    // الزر الآن يطلب من المتصفح تنفيذ حركة "الرجوع" الحقيقية
+    // الزر الآن يطلب من المتصفح تنفيذ حركة "الرجوع" الحقيقية فقط
     btn.onclick = () => history.back();
 }
 
