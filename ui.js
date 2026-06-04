@@ -1,6 +1,6 @@
 /**
  * @file ui.js
- * @description ملف إدارة الواجهات المستقر - تم قفل أبعاد البطاقات بالبكسل لمنع الانتفاخ العمودي وتوحيد الحجم نهائياً
+ * @description ملف إدارة الواجهات المستقر - تم نقل الأنماط المضمنة إلى فئات CSS مخصصة لتوحيد الحجم نهائياً
  */
 
 // دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
@@ -103,7 +103,7 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات الفردية بحجم بطاقات موحد وإجباري بالبكسل وصور مصغرة كالأيقونات تماماً
+// 4. عرض المنتجات الفردية بحجم بطاقات موحد عبر فئات CSS المخصصة
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
@@ -116,13 +116,14 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // ميزة الفرض الصارم: حجم أيقونة صغير جداً ومتناسق (38px) مستحيل يتسبب في تمديد البطاقة لأسفل
+        // استخدام الفئة item-img-fixed بدلاً من الستاين المضمن
         const imgTag = i.image && i.image.trim() !== "" 
-            ? `<img src="${i.image}" style="width: 38px !important; height: 38px !important; min-width: 38px !important; min-height: 38px !important; object-fit: cover !important;" class="rounded-xl flex-shrink-0" alt="">` 
+            ? `<img src="${i.image}" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
             : '';
 
+        // استخدام الفئة item-card-fixed بدلاً من الستايل المضمن لتوحيد حجم البطاقات
         return `
-            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all" style="height: 60px !important;">
+            <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all">
                 
                 <div class="flex items-center gap-3 h-full">
                     ${imgTag}
