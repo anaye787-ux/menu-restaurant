@@ -87,7 +87,7 @@ function showCategories() {
         `;
     }).join('');
     
-    updateBackButton(renderMain);
+    updateBackButton();
 }
 
 // 3. عرض الأقسام الفرعية
@@ -130,7 +130,7 @@ function renderSub(catName) {
         `;
     }).join('');
     
-    updateBackButton(showCategories);
+    updateBackButton();
 }
 
 // 4. عرض المنتجات الفردية
@@ -173,7 +173,7 @@ function renderItems(catName, subName, hasParentSub) {
         `;
     }).join('');
 
-    updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
+    updateBackButton();
 }
 
 /* =========================================
@@ -289,9 +289,5 @@ function renderSearchResults(items, isFallback, safeQuery) {
 
     content.innerHTML = html;
     
-    updateBackButton(() => {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('searchContainer').classList.add('hidden');
-        showCategories();
-    });
+    updateBackButton();
 }
