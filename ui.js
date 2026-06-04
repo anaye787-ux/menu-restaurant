@@ -49,26 +49,23 @@ function renderMain() {
     if (backBtn) backBtn.classList.add('hidden');
 }
 
-// 2. عرض الأقسام
+// 2. عرض الأقسام الرئيسية
 function showCategories() {
     resetGlobalBackground();
     toggleLogo(false);
-    
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة
+    // تسجيل الحالة مع توضيح أن الصفحة السابقة هي الرئيسية
     if (history.state?.view !== 'cats') {
         history.pushState({ view: 'cats' }, '', '');
     }
 
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`]).filter(Boolean))];
-    
     content.innerHTML = cats.map(c => {
         const catItems = menuData.filter(i => i[`cat_${currentLang}`] === c);
         const bgImage = sanitizeHTML(catItems.find(i => i.image)?.image || '');
         const safeC = sanitizeHTML(c);
-        
         return `
             <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
@@ -76,12 +73,10 @@ function showCategories() {
                 <div class="absolute inset-0 bg-black/45 z-0"></div>
                 <div class="relative z-10 w-full flex justify-between items-center text-white">
                     <span class="font-bold text-xl drop-shadow-md">${safeC}</span>
-                    <span class="text-sm drop-shadow-md">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
                 </div>
             </div>
         `;
     }).join('');
-    
     updateBackButton();
 }
 
@@ -89,11 +84,10 @@ function showCategories() {
 function renderSub(catName) {
     resetGlobalBackground();
     toggleLogo(false);
-
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة
+    // تسجيل الحالة مع تحديد الأب
     if (history.state?.view !== 'sub' || history.state?.cat !== catName) {
         history.pushState({ view: 'sub', cat: catName }, '', '');
     }
@@ -119,25 +113,22 @@ function renderSub(catName) {
                 <div class="absolute inset-0 bg-black/45 z-0"></div>
                 <div class="relative z-10 w-full flex justify-between items-center text-white">
                     <span class="font-bold text-xl drop-shadow-md">${safeS}</span>
-                    <span class="text-sm drop-shadow-md">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
                 </div>
             </div>
         `;
     }).join('');
-    
     updateBackButton();
 }
 
-// 4. عرض المنتجات
+// 4. عرض المنتجات (التعديل الجوهري هنا)
 function renderItems(catName, subName, hasParentSub) {
     toggleLogo(false);
-    
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة (سواء كان قادماً من Sub أو مباشرة من Cats)
+    // تسجيل الحالة مع تمرير معلومة ما إذا كان الأب هو 'sub' أو 'cats'
     if (history.state?.view !== 'items' || history.state?.cat !== catName || history.state?.sub !== subName) {
-        history.pushState({ view: 'items', cat: catName, sub: subName }, '', '');
+        history.pushState({ view: 'items', cat: catName, sub: subName, parent: hasParentSub ? 'sub' : 'cats' }, '', '');
     }
 
     const items = menuData.filter(i => 
@@ -150,7 +141,6 @@ function renderItems(catName, subName, hasParentSub) {
         const safeImg = sanitizeHTML(i.image);
         const safeName = sanitizeHTML(i[`name_${currentLang}`]);
         const safePrice = sanitizeHTML(i.price);
-
         const imgTag = safeImg.trim() !== "" ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` : '';
 
         return `
@@ -165,7 +155,6 @@ function renderItems(catName, subName, hasParentSub) {
             </div>
         `;
     }).join('');
-
     updateBackButton();
 }
 /* =========================================
