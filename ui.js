@@ -1,7 +1,9 @@
-/**
- * @file ui.js
- * @description ملف إدارة الواجهات المستقر - متضمن الفئات المخصصة للبطاقات + ميزة البحث الذكي والتحميل الكسول + ألوان الهوية (Brand)
- */
+const sanitizeHTML = (str) => {
+    if (!str) return '';
+    const tempDiv = document.createElement('div');
+    tempDiv.textContent = str; // المتصفح يحول أي كود خبيث إلى نص عادي غير ضار
+    return tempDiv.innerHTML;
+};
 
 // دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
@@ -23,9 +25,9 @@ function renderMain() {
     
     content.innerHTML = `
         <div class="text-center p-6 space-y-6">
-            <h1 class="text-3xl font-bold text-brand-dark">${texts[currentLang].t}</h1>
+            <h1 class="text-3xl font-bold text-brand-dark">${sanitizeHTML(texts[currentLang].t)}</h1>
             <button onclick="showCategories()" class="bg-brand text-white px-12 py-4 rounded-full font-bold shadow-lg hover:bg-opacity-90 transition-all">
-                ${texts[currentLang].b}
+                ${sanitizeHTML(texts[currentLang].b)}
             </button>
         </div>
     `;
@@ -43,19 +45,20 @@ function showCategories() {
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`]).filter(Boolean))];
     
     content.innerHTML = cats.map(c => {
-        // استخراج أول رابط صورة متاح لهذه الفئة الرئيسية من عمود ImageURL
+        // استخراج أول رابط صورة متاح
         const catItems = menuData.filter(i => i[`cat_${currentLang}`] === c);
-        const bgImage = catItems.find(i => i.image)?.image || '';
+        const bgImage = sanitizeHTML(catItems.find(i => i.image)?.image || '');
+        const safeC = sanitizeHTML(c);
         
         return `
             <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
-                 onclick="renderSub('${c.replace(/'/g, "\\'")}')">
+                 onclick="renderSub('${safeC.replace(/'/g, "\\'")}')">
                 
                 <div class="absolute inset-0 bg-black/45 z-0"></div>
                 
                 <div class="relative z-10 w-full flex justify-between items-center text-white">
-                    <span class="font-bold text-xl drop-shadow-md">${c}</span>
+                    <span class="font-bold text-xl drop-shadow-md">${safeC}</span>
                     <span class="text-sm drop-shadow-md">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
                 </div>
             </div>
@@ -74,26 +77,27 @@ function renderSub(catName) {
     const items = menuData.filter(i => i[`cat_${currentLang}`] === catName);
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
-    // إذا كان القسم مباشراً ومثبتاً بدون فروع فرعية ننتقل للأصناف فوراً
+    // إذا كان القسم مباشراً ومثبتاً بدون فروع فرعية
     if (subs.length === 0) {
         renderItems(catName, "", false);
         return;
     }
     
     content.innerHTML = subs.map(s => {
-        // استخراج أول رابط صورة متاح لهذا القسم الفرعي المحدد
         const subItems = items.filter(i => i[`sub_${currentLang}`] === s);
-        const bgImage = subItems.find(i => i.image)?.image || '';
+        const bgImage = sanitizeHTML(subItems.find(i => i.image)?.image || '');
+        const safeS = sanitizeHTML(s);
+        const safeCatName = sanitizeHTML(catName);
 
         return `
             <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
-                 onclick="renderItems('${catName.replace(/'/g, "\\'")}', '${s.replace(/'/g, "\\'")}', true)">
+                 onclick="renderItems('${safeCatName.replace(/'/g, "\\'")}', '${safeS.replace(/'/g, "\\'")}', true)">
                 
                 <div class="absolute inset-0 bg-black/45 z-0"></div>
                 
                 <div class="relative z-10 w-full flex justify-between items-center text-white">
-                    <span class="font-bold text-xl drop-shadow-md">${s}</span>
+                    <span class="font-bold text-xl drop-shadow-md">${safeS}</span>
                     <span class="text-sm drop-shadow-md">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
                 </div>
             </div>
@@ -103,12 +107,11 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات الفردية بحجم بطاقات موحد عبر فئات CSS المخصصة
+// 4. عرض المنتجات الفردية بحجم بطاقات موحد
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تصفية المنتجات مع تجاهل الأسطر المخصصة للصور فقط لتجنب أي أخطاء بصرية
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
         (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName) &&
@@ -116,22 +119,25 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // إضافة ميزة التحميل الكسول (loading="lazy") مع الاحتفاظ بالفئة item-img-fixed
-        const imgTag = i.image && i.image.trim() !== "" 
-            ? `<img src="${i.image}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
+        // تطهير البيانات قبل عرضها
+        const safeImg = sanitizeHTML(i.image);
+        const safeName = sanitizeHTML(i[`name_${currentLang}`]);
+        const safePrice = sanitizeHTML(i.price);
+
+        const imgTag = safeImg.trim() !== "" 
+            ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` 
             : '';
 
-        // استخدام الفئة item-card-fixed كما هي لضمان عدم انتفاخ البطاقة مع تأثير حواف بألوان الهوية
         return `
             <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
                 
                 <div class="flex items-center gap-3 h-full">
                     ${imgTag}
-                    <span class="font-bold text-brand-dark text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
+                    <span class="font-bold text-brand-dark text-lg flex items-center h-full">${safeName}</span>
                 </div>
                 
                 <span class="text-brand font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
-                    ${i.price}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
+                    ${safePrice}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
                 </span>
                 
             </div>
@@ -142,7 +148,7 @@ function renderItems(catName, subName, hasParentSub) {
 }
 
 /* =========================================
-   ميزات البحث الذكي (Smart Fallback Search)
+   ميزات البحث الذكي (Fuse.js + Smart Dictionary)
    ========================================= */
 
 function toggleSearch() {
@@ -154,32 +160,34 @@ function toggleSearch() {
     if (!container.classList.contains('hidden')) {
         input.focus();
     } else {
-        input.value = ''; // تنظيف الحقل عند الإغلاق
+        input.value = ''; 
         if (document.getElementById('searchIndicator')) {
-            showCategories(); // العودة للأقسام إذا كنا في صفحة النتائج
+            showCategories(); 
         }
     }
 }
 
 function performSearch(query) {
-    const q = query.toLowerCase().trim();
+    const q = query.trim();
     if (!q) {
         showCategories();
         return;
     }
 
-    // 1. البحث المباشر في الأسماء
-    let results = menuData.filter(i => 
-        (i.name_ar && i.name_ar.toLowerCase().includes(q)) ||
-        (i.name_fr && i.name_fr.toLowerCase().includes(q)) ||
-        (i.name_en && i.name_en.toLowerCase().includes(q))
-    );
+    // 1. استخدام محرك Fuse.js للبحث والتغاضي عن الأخطاء الإملائية (مثل عصر بدل عصير)
+    const options = {
+        includeScore: true,
+        threshold: 0.4, // نسبة تسامح ممتازة للأخطاء الإملائية
+        keys: ['name_ar', 'name_fr', 'name_en', 'cat_ar', 'cat_fr']
+    };
+
+    const fuse = new Fuse(menuData, options);
+    let results = fuse.search(q).map(res => res.item);
 
     let isFallback = false;
 
-    // 2. البحث الذكي (اقتراح بدائل) إذا كانت النتيجة 0
+    // 2. دمج القاموس الذكي القديم الخاص بك (لم نحذفه!) ليعمل كخطة بديلة إذا فشل Fuse.js
     if (results.length === 0) {
-        // قاموس المرادفات
         const smartDictionary = {
             'بانيني': ['طاكوس', 'شاورما', 'ساندويتش', 'tacos', 'sandwich'],
             'panini': ['tacos', 'sandwich', 'chawarma'],
@@ -190,40 +198,41 @@ function performSearch(query) {
         };
 
         let fallbackKeywords = [];
+        const qLower = q.toLowerCase();
         for (const key in smartDictionary) {
-            if (q.includes(key) || key.includes(q)) {
+            if (qLower.includes(key) || key.includes(qLower)) {
                 fallbackKeywords = fallbackKeywords.concat(smartDictionary[key]);
             }
         }
 
         if (fallbackKeywords.length > 0) {
             isFallback = true;
-            results = menuData.filter(i => {
-                return fallbackKeywords.some(kw => 
-                    (i.name_ar && i.name_ar.toLowerCase().includes(kw)) ||
-                    (i.name_fr && i.name_fr.toLowerCase().includes(kw)) ||
-                    (i.cat_ar && i.cat_ar.toLowerCase().includes(kw)) ||
-                    (i.cat_fr && i.cat_fr.toLowerCase().includes(kw))
-                );
+            // استخدام Fuse.js مرة أخرى للبحث عن الكلمات البديلة المستخرجة من القاموس
+            let fallbackResults = [];
+            fallbackKeywords.forEach(kw => {
+                const kwResults = fuse.search(kw).map(res => res.item);
+                fallbackResults = fallbackResults.concat(kwResults);
             });
+            // إزالة النتائج المكررة
+            results = [...new Set(fallbackResults)];
         }
     }
 
-    renderSearchResults(results, isFallback, q);
+    // إرسال الكلمة مطهرة برمجياً كحماية XSS
+    renderSearchResults(results, isFallback, sanitizeHTML(q));
 }
 
-function renderSearchResults(items, isFallback, query) {
+function renderSearchResults(items, isFallback, safeQuery) {
     resetGlobalBackground();
     const content = document.getElementById('content');
     if (!content) return;
 
     let html = '';
     
-    // واجهة رسائل تفاعلية حسب اللغة ونوع النتيجة
     const messages = {
-        ar: isFallback ? `لم نعثر على "<b>${query}</b>"، لكن هذه الخيارات قد تعجبك:` : `نتائج البحث عن "<b>${query}</b>":`,
-        fr: isFallback ? `Nous n'avons pas trouvé "<b>${query}</b>", mais voici des alternatives :` : `Résultats pour "<b>${query}</b>":`,
-        en: isFallback ? `We didn't find "<b>${query}</b>", but you might like these:` : `Search results for "<b>${query}</b>":`
+        ar: isFallback ? `لم نعثر على "<b>${safeQuery}</b>"، لكن هذه الخيارات قد تعجبك:` : `نتائج البحث عن "<b>${safeQuery}</b>":`,
+        fr: isFallback ? `Nous n'avons pas trouvé "<b>${safeQuery}</b>", mais voici des alternatives :` : `Résultats pour "<b>${safeQuery}</b>":`,
+        en: isFallback ? `We didn't find "<b>${safeQuery}</b>", but you might like these:` : `Search results for "<b>${safeQuery}</b>":`
     };
 
     const emptyMsg = {
@@ -243,18 +252,22 @@ function renderSearchResults(items, isFallback, query) {
             </div>
         `;
         html += items.map(i => {
-            const imgTag = i.image && i.image.trim() !== "" 
-                ? `<img src="${i.image}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${i[`name_${currentLang}`]}">` 
+            const safeImg = sanitizeHTML(i.image);
+            const safeName = sanitizeHTML(i[`name_${currentLang}`]);
+            const safePrice = sanitizeHTML(i.price);
+
+            const imgTag = safeImg.trim() !== "" 
+                ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` 
                 : '';
 
             return `
                 <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
                     <div class="flex items-center gap-3 h-full">
                         ${imgTag}
-                        <span class="font-bold text-brand-dark text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
+                        <span class="font-bold text-brand-dark text-lg flex items-center h-full">${safeName}</span>
                     </div>
                     <span class="text-brand font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
-                        ${i.price}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
+                        ${safePrice}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
                     </span>
                 </div>
             `;
@@ -263,7 +276,6 @@ function renderSearchResults(items, isFallback, query) {
 
     content.innerHTML = html;
     
-    // زر الرجوع يعود دائماً للأقسام ويفك التركيز عن البحث
     updateBackButton(() => {
         document.getElementById('searchInput').value = '';
         document.getElementById('searchContainer').classList.add('hidden');
