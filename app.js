@@ -1,9 +1,31 @@
+// --- مدير حالة التنقل ---
+// لا نحتاج لتخزين التاريخ في مصفوفة لأن المتصفح يقوم بذلك تلقائياً
+// المستمع أدناه هو المسؤول عن فك تشفير الحالة والعودة للخلف
+window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.view) {
+        const { view, cat, sub } = event.state;
+        
+        // تنفيذ دالة الرسم بناءً على الحالة المسترجعة
+        if (view === 'main') {
+            renderMain();
+        } else if (view === 'cats') {
+            showCategories();
+        } else if (view === 'sub') {
+            renderSub(cat);
+        } else if (view === 'items') {
+            renderItems(cat, sub, true);
+        }
+    } else {
+        // إذا لم توجد حالة (يعني المستخدم في الصفحة الأولى)، عد للرئيسية
+        renderMain();
+    }
+});
+
 function toggleLangMenu() {
     const menu = document.getElementById('langMenu');
     if (menu) menu.classList.toggle('hidden');
 }
 
-// معالجة تغيير اللغة والاتجاه الجغرافي للمنيو (RTL / LTR) بشكل ديناميكي كامل
 function changeLanguage(lang, flag) {
     currentLang = lang;
     const flagElem = document.getElementById('currentFlag');
@@ -13,18 +35,23 @@ function changeLanguage(lang, flag) {
     document.documentElement.lang = lang;
     
     toggleLangMenu();
+    
+    // عند تغيير اللغة نعيد ضبط الحالة لتجنب تداخل التاريخ
+    history.replaceState({ view: 'main' }, '', '');
     renderMain();
 }
 
-// تحديث ذكي ومستقر لزر الرجوع حسب وضعية التصفح واللغة الحالية
-function updateBackButton(callback) {
+// تحديث الزر: أصبح الآن بسيطاً ومباشراً
+function updateBackButton() {
     const btn = document.getElementById('backBtn');
     if (!btn) return;
     
     btn.classList.remove('hidden');
     btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
-    btn.onclick = callback;
+    
+    // الزر الآن يطلب من المتصفح تنفيذ حركة "الرجوع" الحقيقية
+    btn.onclick = () => history.back();
 }
 
-// إشارة البدء: انطلاق جلب البيانات فور تحميل الصفحة وسيرفرات جيت هاب
+// إشارة البدء
 init();
