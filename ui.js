@@ -1,9 +1,3 @@
-/**
- * @file ui.js
- * @description ملف إدارة الواجهات المستقر - متضمن الفئات المخصصة، ميزة البحث الذكي، ألوان الهوية، وإخفاء اللوجو ديناميكياً
- */
-
-// --- ميزة الأمان (XSS Protection) ---
 const sanitizeHTML = (str) => {
     if (!str) return '';
     const tempDiv = document.createElement('div');
