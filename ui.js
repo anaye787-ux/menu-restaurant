@@ -1,3 +1,9 @@
+/**
+ * @file ui.js
+ * @description ملف إدارة الواجهات المستقر - تم قفل أبعاد البطاقات بالبكسل لمنع الانتفاخ العمودي وتوحيد الحجم نهائياً
+ */
+
+// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
     const appWrapper = document.getElementById('app') || document.body;
     appWrapper.style.backgroundImage = '';
@@ -97,7 +103,7 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات الفردية بنمط البطاقات البيضاء المنفصلة وتنسيق التسعير الفاخر المطور (نسخة مصلحة الحجم بالكامل)
+// 4. عرض المنتجات الفردية بحجم بطاقات موحد وإجباري بالبكسل وصور مصغرة كالأيقونات تماماً
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
@@ -110,20 +116,20 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // ميزة الفرض الإجباري المصلحة: استبدال كلاس Tailwind بستايل مباشر مقفل ومقاوم للكاش
+        // ميزة الفرض الصارم: حجم أيقونة صغير جداً ومتناسق (38px) مستحيل يتسبب في تمديد البطاقة لأسفل
         const imgTag = i.image && i.image.trim() !== "" 
-            ? `<img src="${i.image}" style="width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important;" class="object-cover rounded-lg flex-shrink-0" alt="">` 
+            ? `<img src="${i.image}" style="width: 38px !important; height: 38px !important; min-width: 38px !important; min-height: 38px !important; object-fit: cover !important;" class="rounded-xl flex-shrink-0" alt="">` 
             : '';
 
         return `
-            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-3 flex items-center justify-between mb-3 min-h-[64px] transition-all">
+            <div class="bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all" style="height: 60px !important;">
                 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 h-full">
                     ${imgTag}
-                    <span class="font-bold text-gray-800 text-lg flex items-center">${i[`name_${currentLang}`]}</span>
+                    <span class="font-bold text-gray-800 text-lg flex items-center h-full">${i[`name_${currentLang}`]}</span>
                 </div>
                 
-                <span class="text-gray-900 font-black text-xl whitespace-nowrap pl-2 pr-2 flex items-center gap-1">
+                <span class="text-gray-900 font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
                     ${i.price}<span class="text-[11px] font-normal text-gray-400 tracking-wide">MAD</span>
                 </span>
                 
