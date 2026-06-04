@@ -22,7 +22,6 @@ function renderMain() {
     resetGlobalBackground();
     toggleLogo(true);
     
-    // تسجيل الحالة
     if (history.state?.view !== 'main') {
         history.pushState({ view: 'main' }, '', '');
     }
@@ -44,9 +43,7 @@ function renderMain() {
             </button>
         </div>
     `;
-    
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) backBtn.classList.add('hidden');
+    updateBackButton();
 }
 
 // 2. عرض الأقسام الرئيسية
@@ -56,7 +53,6 @@ function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة مع توضيح أن الصفحة السابقة هي الرئيسية
     if (history.state?.view !== 'cats') {
         history.pushState({ view: 'cats' }, '', '');
     }
@@ -87,7 +83,6 @@ function renderSub(catName) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة مع تحديد الأب
     if (history.state?.view !== 'sub' || history.state?.cat !== catName) {
         history.pushState({ view: 'sub', cat: catName }, '', '');
     }
@@ -96,7 +91,7 @@ function renderSub(catName) {
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
     if (subs.length === 0) {
-        renderItems(catName, "", true);
+        renderItems(catName, "", false); // false يعني لا يوجد قسم فرعي
         return;
     }
     
@@ -120,15 +115,22 @@ function renderSub(catName) {
     updateBackButton();
 }
 
-// 4. عرض المنتجات (التعديل الجوهري هنا)
+// 4. عرض المنتجات
 function renderItems(catName, subName, hasParentSub) {
     toggleLogo(false);
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة مع تمرير معلومة ما إذا كان الأب هو 'sub' أو 'cats'
-    if (history.state?.view !== 'items' || history.state?.cat !== catName || history.state?.sub !== subName) {
-        history.pushState({ view: 'items', cat: catName, sub: subName, parent: hasParentSub ? 'sub' : 'cats' }, '', '');
+    // تسجيل الحالة مع تحديد الأب (parent) بدقة
+    const stateObj = { 
+        view: 'items', 
+        cat: catName, 
+        sub: subName, 
+        parent: hasParentSub ? 'sub' : 'cats' 
+    };
+
+    if (JSON.stringify(history.state) !== JSON.stringify(stateObj)) {
+        history.pushState(stateObj, '', '');
     }
 
     const items = menuData.filter(i => 
@@ -156,6 +158,30 @@ function renderItems(catName, subName, hasParentSub) {
         `;
     }).join('');
     updateBackButton();
+}
+
+// إضافة مُستمع الحدث لإدارة الرجوع (popstate)
+window.addEventListener('popstate', (event) => {
+    if (!event.state) { renderMain(); return; }
+    
+    const { view, cat, sub, parent } = event.state;
+    if (view === 'main') renderMain();
+    else if (view === 'cats') showCategories();
+    else if (view === 'sub') renderSub(cat);
+    else if (view === 'items') renderItems(cat, sub, parent === 'sub');
+});
+
+// تحديث الزر ليقوم دائماً بالرجوع للمتصفح
+function updateBackButton() {
+    const btn = document.getElementById('backBtn');
+    if (!btn) return;
+    
+    if (!history.state || history.state.view === 'main') {
+        btn.classList.add('hidden');
+    } else {
+        btn.classList.remove('hidden');
+        btn.onclick = () => window.history.back();
+    }
 }
 /* =========================================
    ميزات البحث الذكي
