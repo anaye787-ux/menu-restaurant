@@ -90,12 +90,12 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. الميزة الثورية المحدثة: عرض المنتجات داخل كرت زجاجي موحد محصن 100% مع الخطوط المتقطعة ومنع الأسطر الفارغة
+// 4. الميزة الثورية الجديدة: عرض المنتجات داخل كرت زجاجي موحد مصلح ومحمي ضد الأسطر الفارغة
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
-    // ميزة: تصفية صارمة تمنع ظهور أي سطر فارغ أو ناقص (تقتل كلمة MAD الطائرة نهائياً)
+    // إصلاح ذكي: تصفية صارمة تضمن أن السطر يحتوي على اسم منتج حقيقي لتجنب ظهور أي عملات طائرة عشوائية
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
         (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName) &&
@@ -115,24 +115,21 @@ function renderItems(catName, subName, hasParentSub) {
     // تحديد عنوان الصفحة (الفرعي إن وجد، وإلا الرئيسي)
     const title = subName !== "" ? subName : catName;
     
-    // بناء الكرت الموحد والخطوط المتقطعة باستخدام كلاسات Tailwind المتطورة والمحصنة ضد الكاش لضمان المظهر الصحيح فوراً
     content.innerHTML = `
-        <div class="text-center mb-6">
-            <h2 class="text-xl font-black text-gray-800 drop-shadow-sm bg-white/70 inline-block px-6 py-2 rounded-full backdrop-blur-md border border-white/40">${title}</h2>
+        <div class="text-center mb-4">
+            <h2 class="text-xl font-black text-gray-800 drop-shadow-sm bg-white/60 inline-block px-6 py-1.5 rounded-full backdrop-blur-md border border-white/30">${title}</h2>
         </div>
         
-        <div class="bg-white/75 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-4 space-y-1">
+        <div class="unified-glass-card">
             ${items.map(i => `
-                <div class="flex items-baseline justify-between py-3 border-b border-black/5 last:border-b-0">
+                <div class="menu-item-row">
+                    <span class="menu-item-name">${i[`name_${currentLang}`]}</span>
                     
-                    <span class="font-bold text-gray-900 text-base pr-2 whitespace-nowrap">${i[`name_${currentLang}`]}</span>
+                    <div class="menu-item-dots"></div>
                     
-                    <div class="flex-grow border-b-2 border-dotted border-gray-400/60 mx-2" style="transform: translateY(-4px);"></div>
-                    
-                    <span class="font-black text-green-700 text-lg pl-2 whitespace-nowrap">
-                        ${i.price} <span class="text-xs font-bold text-green-600/90 m-0.5">MAD</span>
+                    <span class="menu-item-price">
+                        ${i.price} <span class="menu-item-currency">MAD</span>
                     </span>
-                    
                 </div>
             `).join('')}
         </div>
