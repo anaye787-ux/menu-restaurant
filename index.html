@@ -12,13 +12,15 @@
             theme: {
                 extend: {
                     colors: {
+                        // ألوان خاصة بهوية المقهى/المطعم
                         brand: {
-                            light: '#fef3c7',
-                            DEFAULT: '#d97706',
-                            dark: '#78350f',
+                            light: '#fef3c7', // لون خلفية دافئ (كريمي)
+                            DEFAULT: '#d97706', // لون برتقالي/قهوة رئيسي للأزرار
+                            dark: '#78350f', // لون بني غامق للنصوص
                         }
                     },
                     fontFamily: {
+                        // إضافة خطوط عربية أو فرنسية مخصصة
                         sans: ['Tajawal', 'sans-serif'], 
                     }
                 }
@@ -32,12 +34,14 @@
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     
     <style>
+        /* إعدادات الخلفية */
         body { margin: 0; padding: 0; }
         #bg-image {
             background-image: url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1920');
             background-size: cover;
             background-position: center;
         }
+        /* تنسيق البطاقات الشفافة */
         .card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(5px); padding: 15px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
         .card:hover { background: rgba(255, 255, 255, 0.9); }
     </style>
