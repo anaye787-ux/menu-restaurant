@@ -85,3 +85,57 @@
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.25);
 }
+/* --- ميزة: الكرت الزجاجي الكبير والموحد الممتد لجميع الأصناف --- */
+.unified-glass-card {
+    background: rgba(255, 255, 255, 0.76);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    border-radius: 22px;
+    padding: 8px 18px;
+}
+
+/* --- ميزة: سطر المنتج المرن (يحتوي على الاسم والخطوط والسعر متراصين) --- */
+.menu-item-row {
+    display: flex;
+    align-items: baseline; /* يضمن موازاة أسفل النص مع النقاط والسعر بدقة */
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* سطر أفقي خفيف يفصل المنتجات داخل الكرت */
+}
+
+.menu-item-row:last-child {
+    border-bottom: none; /* إلغاء السطر الأفقي لآخر منتج للحفاظ على النظافة البصرية */
+}
+
+.menu-item-name {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    padding-inline-end: 8px; /* يترك مسافة صغيرة قبل بدء النقاط حسب اللغة */
+}
+
+/* --- ميزة: الخطوط الصغيرة المتقطعة الكلاسيكية الفاخرة --- */
+.menu-item-dots {
+    flex-grow: 1; /* تجعل الخط يمتد تلقائياً ويملأ الفراغ بالكامل على أي شاشة هاتف */
+    border-bottom: 2px dotted rgba(0, 0, 0, 0.18); /* النقاط الرمادية الخفيفة */
+    margin-bottom: 4px; /* لرفع النقاط قليلاً لتتوسط الكلمات بصرياً */
+}
+
+/* --- ميزة: تفاصيل هندسة الأسعار الفندقية --- */
+.menu-item-price {
+    font-weight: 800;
+    color: #15803d; /* اللون الأخضر المريح والواضح للأسعار */
+    font-size: 1.15rem;
+    padding-inline-start: 8px; /* يترك مسافة صغيرة بعد انتهاء النقاط */
+    white-space: nowrap;
+}
+
+.menu-item-currency {
+    font-size: 0.72rem; /* تصغير حجم كلمة MAD بنسبة مدروسة لتعطي فخامة */
+    font-weight: 600;
+    color: #166534;
+    margin-inline-start: 1px;
+}
