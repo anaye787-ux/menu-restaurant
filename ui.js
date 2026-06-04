@@ -93,9 +93,11 @@ function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
+    // تم تحديث الفلترة هنا فقط لتتجاهل الأسطر التي ليس بها اسم منتج حقيقي (مثل أسطر الصور 2 و 12 و 13)
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
-        (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName)
+        (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName) &&
+        i[`name_${currentLang}`] && i[`name_${currentLang}`].trim() !== ""
     );
     
     content.innerHTML = items.map(i => `
