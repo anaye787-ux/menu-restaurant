@@ -85,3 +85,16 @@
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.25);
 }
+
+/* --- فئات مخصصة لتوحيد أحجام المنتجات ومنع التشوه البصري (تمت إضافتها) --- */
+.item-card-fixed {
+    height: 60px;
+}
+
+.item-img-fixed {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    object-fit: cover;
+}
