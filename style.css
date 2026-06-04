@@ -53,7 +53,7 @@
 
 .card-glass-item:hover {
     background: rgba(255, 255, 255, 0.85);
-    transform: scale([1.005]);
+    transform: scale(1.005);
 }
 
 /* --- ميزة: الهيكل العظمي المتحرك (Skeleton Loader Shimmer) أثناء جلب البيانات من قوقل --- */
