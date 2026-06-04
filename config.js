@@ -57,8 +57,33 @@ async function init() {
         
         // الانتقال لرسم الواجهة الترحيبية بعد اكتمال جلب البيانات بنجاح
         renderMain();
+        
     } catch (err) {
         console.error("Critical Error Initialization Failed:", err);
-        document.getElementById('content').innerHTML = `<p class="text-red-500 text-center p-4">Service temporarily unavailable.</p>`;
+        
+        // نصوص رسالة الخطأ وزر المحاولة لتتناسب مع تعدد اللغات
+        const errorUI = {
+            ar: { msg: 'عذراً، حدث خطأ في الاتصال. يرجى التحقق من الشبكة.', btn: 'إعادة المحاولة 🔄' },
+            fr: { msg: 'Erreur de connexion. Veuillez vérifier votre réseau.', btn: 'Réessayer 🔄' },
+            en: { msg: 'Connection error. Please check your network.', btn: 'Retry 🔄' }
+        };
+
+        const lang = typeof currentLang !== 'undefined' ? currentLang : 'fr'; // تأمين لغة افتراضية
+
+        const content = document.getElementById('content');
+        if (content) {
+            // رسم واجهة الخطأ مع زر إعادة المحاولة المرتبط بدالة init
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-6 mt-12 text-center space-y-5 animate-[fadeIn_0.3s_ease-out]">
+                    <div class="text-red-500 bg-red-50 p-4 rounded-full shadow-sm">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <p class="text-gray-700 font-medium text-lg leading-relaxed">${errorUI[lang].msg}</p>
+                    <button onclick="init()" class="bg-gray-900 text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-gray-800 active:scale-95 transition-all">
+                        ${errorUI[lang].btn}
+                    </button>
+                </div>
+            `;
+        }
     }
 }
