@@ -22,7 +22,7 @@
     animation: fadeIn 0.35s ease-out forwards;
 }
 
-/* --- تصميم البطاقة الافتراضية (تحديث بطاقتك الأصلية مع إضافة تأثير حركة مرن) --- */
+/* --- تصميم البطاقة الافتراضية الأركان --- */
 .card {
     border: 1px solid #e5e7eb;
     border-radius: 15px;
@@ -38,10 +38,10 @@
 .card:hover { 
     background: #f9fafb; 
     border-color: #d1d5db; 
-    transform: translateY(-1px); /* حركة صعود خفيفة تعطي إحساساً بالتفاعل */
+    transform: translateY(-1px);
 }
 
-/* --- ميزة: تصميم الزجاج الشفاف المطور (Premium Glassmorphism) لقائمة المنتجات --- */
+/* --- ميزة: تصميم الزجاج الشفاف المطور لقائمة المنتجات --- */
 .card-glass-item {
     background: rgba(255, 255, 255, 0.78);
     backdrop-filter: blur(12px);
@@ -53,10 +53,10 @@
 
 .card-glass-item:hover {
     background: rgba(255, 255, 255, 0.85);
-    transform: scale([1.005]);
+    transform: scale(1.005);
 }
 
-/* --- ميزة: الهيكل العظمي المتحرك (Skeleton Loader Shimmer) أثناء جلب البيانات من قوقل --- */
+/* --- ميزة: الهيكل العظمي المتحرك أثناء جلب البيانات من قوقل --- */
 @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -70,7 +70,7 @@
 
 /* --- ميزة: تخصيص شريط تمرير ذكي ونحيف جداً للهواتف المتصفحة --- */
 ::-webkit-scrollbar {
-    width: 4px; /* حجم نحيف وغير مزعج بصرياً */
+    width: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -85,6 +85,7 @@
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.25);
 }
+
 /* --- ميزة: الكرت الزجاجي الكبير والموحد الممتد لجميع الأصناف --- */
 .unified-glass-card {
     background: rgba(255, 255, 255, 0.76);
@@ -96,17 +97,18 @@
     padding: 8px 18px;
 }
 
-/* --- ميزة: سطر المنتج المرن (يحتوي على الاسم والخطوط والسعر متراصين) --- */
+/* --- ميزة: سطر المنتج المصلح والمحمي من التداخل والانهيار البرمجي --- */
 .menu-item-row {
     display: flex;
-    align-items: baseline; /* يضمن موازاة أسفل النص مع النقاط والسعر بدقة */
+    align-items: center; /* تم تغييرها من baseline إلى center لمنع التداخل العمودي في الهواتف */
     justify-content: space-between;
     padding: 14px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* سطر أفقي خفيف يفصل المنتجات داخل الكرت */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    width: 100%; /* يضمن امتداد السطر بكامل عرض الكرت */
 }
 
 .menu-item-row:last-child {
-    border-bottom: none; /* إلغاء السطر الأفقي لآخر منتج للحفاظ على النظافة البصرية */
+    border-bottom: none;
 }
 
 .menu-item-name {
@@ -114,28 +116,32 @@
     color: #1f2937;
     font-size: 1.05rem;
     white-space: nowrap;
-    padding-inline-end: 8px; /* يترك مسافة صغيرة قبل بدء النقاط حسب اللغة */
+    flex-shrink: 0; /* يمنع انضغاط أو تشوه اسم المنتج */
 }
 
-/* --- ميزة: الخطوط الصغيرة المتقطعة الكلاسيكية الفاخرة --- */
+/* --- ميزة: الخطوط الصغيرة المتقطعة المصلحة هندسياً --- */
 .menu-item-dots {
-    flex-grow: 1; /* تجعل الخط يمتد تلقائياً ويملأ الفراغ بالكامل على أي شاشة هاتف */
-    border-bottom: 2px dotted rgba(0, 0, 0, 0.18); /* النقاط الرمادية الخفيفة */
-    margin-bottom: 4px; /* لرفع النقاط قليلاً لتتوسط الكلمات بصرياً */
+    flex-grow: 1;
+    border-bottom: 2px dotted rgba(0, 0, 0, 0.22);
+    height: 1px; /* تعيين ارتفاع ثابت يمنع انهيار الحاوية الفارغة */
+    margin: 0 10px; /* توزيع الهوامش الجانبية بنظافة بدلاً من البادينغ */
 }
 
 /* --- ميزة: تفاصيل هندسة الأسعار الفندقية --- */
 .menu-item-price {
     font-weight: 800;
-    color: #15803d; /* اللون الأخضر المريح والواضح للأسعار */
+    color: #15803d;
     font-size: 1.15rem;
-    padding-inline-start: 8px; /* يترك مسافة صغيرة بعد انتهاء النقاط */
     white-space: nowrap;
+    flex-shrink: 0; /* يمنع انضغاط السعر أو نزول العملة لسطر جديد */
+    display: flex;
+    align-items: center;
 }
 
 .menu-item-currency {
-    font-size: 0.72rem; /* تصغير حجم كلمة MAD بنسبة مدروسة لتعطي فخامة */
+    font-size: 0.72rem;
     font-weight: 600;
     color: #166534;
-    margin-inline-start: 1px;
+    margin-left: 3px;
+    margin-right: 3px;
 }
