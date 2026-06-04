@@ -1,9 +1,3 @@
-/**
- * @file ui.js
- * @description ملف إدارة الواجهات المطور - يدعم الخلفيات الديناميكية والكرت الزجاجي الموحد والخطوط المتقطعة
- */
-
-// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
     const appWrapper = document.getElementById('app') || document.body;
     appWrapper.style.backgroundImage = '';
@@ -96,14 +90,16 @@ function renderSub(catName) {
     updateBackButton(showCategories);
 }
 
-// 4. الميزة الثورية الجديدة: عرض المنتجات داخل كرت زجاجي موحد مع تغيير كامل لخلفية الصفحة والخطوط الصغيرة
+// 4. الميزة الثورية المحدثة: عرض المنتجات داخل كرت زجاجي موحد محصن 100% مع الخطوط المتقطعة ومنع الأسطر الفارغة
 function renderItems(catName, subName, hasParentSub) {
     const content = document.getElementById('content');
     if (!content) return;
 
+    // ميزة: تصفية صارمة تمنع ظهور أي سطر فارغ أو ناقص (تقتل كلمة MAD الطائرة نهائياً)
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
-        (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName)
+        (subName === "" ? (!i[`sub_${currentLang}`] || i[`sub_${currentLang}`] === '-') : i[`sub_${currentLang}`] === subName) &&
+        i[`name_${currentLang}`] && i[`name_${currentLang}`].trim() !== ""
     );
     
     // ميزة: جلب الصورة الموحدة لهذا القسم من الجدول وجعلها خلفية حية لكامل الشاشة فوراً
@@ -119,26 +115,24 @@ function renderItems(catName, subName, hasParentSub) {
     // تحديد عنوان الصفحة (الفرعي إن وجد، وإلا الرئيسي)
     const title = subName !== "" ? subName : catName;
     
+    // بناء الكرت الموحد والخطوط المتقطعة باستخدام كلاسات Tailwind المتطورة والمحصنة ضد الكاش لضمان المظهر الصحيح فوراً
     content.innerHTML = `
-        <!-- إظهار اسم القسم المفتوح حالياً بشكل فخم في الأعلى فوق الكرت -->
-        <div class="text-center mb-4">
-            <h2 class="text-xl font-black text-gray-800 drop-shadow-sm bg-white/60 inline-block px-6 py-1.5 rounded-full backdrop-blur-md border border-white/30">${title}</h2>
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-black text-gray-800 drop-shadow-sm bg-white/70 inline-block px-6 py-2 rounded-full backdrop-blur-md border border-white/40">${title}</h2>
         </div>
         
-        <!-- ميزة: الكرت الزجاجي الكبير الموحد الذي يجمع كل منتجات هذا القسم بين يدي الزبون -->
-        <div class="unified-glass-card">
+        <div class="bg-white/75 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-4 space-y-1">
             ${items.map(i => `
-                <div class="menu-item-row">
-                    <!-- اسم المنتج الفردي -->
-                    <span class="menu-item-name">${i[`name_${currentLang}`]}</span>
+                <div class="flex items-baseline justify-between py-3 border-b border-black/5 last:border-b-0">
                     
-                    <!-- ميزة: الخطوط الصغيرة المتقطعة التي تصل الاسم بالسعر ديناميكياً -->
-                    <div class="menu-item-dots"></div>
+                    <span class="font-bold text-gray-900 text-base pr-2 whitespace-nowrap">${i[`name_${currentLang}`]}</span>
                     
-                    <!-- ميزة: هندسة الأسعار الاحترافية (رقم كبير وعملة صغيرة متناسقة) -->
-                    <span class="menu-item-price">
-                        ${i.price} <span class="menu-item-currency">MAD</span>
+                    <div class="flex-grow border-b-2 border-dotted border-gray-400/60 mx-2" style="transform: translateY(-4px);"></div>
+                    
+                    <span class="font-black text-green-700 text-lg pl-2 whitespace-nowrap">
+                        ${i.price} <span class="text-xs font-bold text-green-600/90 m-0.5">MAD</span>
                     </span>
+                    
                 </div>
             `).join('')}
         </div>
