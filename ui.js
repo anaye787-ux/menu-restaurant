@@ -1,30 +1,31 @@
 const sanitizeHTML = (str) => {
     if (!str) return '';
     const tempDiv = document.createElement('div');
-    tempDiv.textContent = str; 
+    tempDiv.textContent = str; // المتصفح يحول أي كود خبيث إلى نص عادي غير ضار
     return tempDiv.innerHTML;
 };
 
+// --- دالة مساعدة للتحكم في ظهور وإخفاء اللوجو ---
 function toggleLogo(show) {
     const logo = document.getElementById('mainLogo');
     if (!logo) return;
-    if (show) logo.classList.remove('hidden');
-    else logo.classList.add('hidden');
+    if (show) {
+        logo.classList.remove('hidden');
+    } else {
+        logo.classList.add('hidden');
+    }
 }
 
+// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
     const appWrapper = document.getElementById('app') || document.body;
     appWrapper.style.backgroundImage = '';
 }
 
-// 1. رسم الواجهة الترحيبية
+// 1. رسم الواجهة الترحيبية الرئيسية
 function renderMain() {
     resetGlobalBackground();
-    toggleLogo(true);
-    
-    if (history.state?.view !== 'main') {
-        history.pushState({ view: 'main' }, '', '');
-    }
+    toggleLogo(true); // إظهار اللوجو في الصفحة الرئيسية
     
     const content = document.getElementById('content');
     if (!content) return;
@@ -43,55 +44,59 @@ function renderMain() {
             </button>
         </div>
     `;
-    updateBackButton();
+    
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) backBtn.classList.add('hidden');
 }
 
-// 2. عرض الأقسام الرئيسية
+// 2. عرض الأقسام الرئيسية بخلفية مصورة كاملة وتعتيم ذكي
 function showCategories() {
     resetGlobalBackground();
-    toggleLogo(false);
+    toggleLogo(false); // إخفاء اللوجو عند عرض الأقسام لتوفير المساحة
+    
     const content = document.getElementById('content');
     if (!content) return;
 
-    if (history.state?.view !== 'cats') {
-        history.pushState({ view: 'cats' }, '', '');
-    }
-
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`]).filter(Boolean))];
+    
     content.innerHTML = cats.map(c => {
+        // استخراج أول رابط صورة متاح
         const catItems = menuData.filter(i => i[`cat_${currentLang}`] === c);
         const bgImage = sanitizeHTML(catItems.find(i => i.image)?.image || '');
         const safeC = sanitizeHTML(c);
+        
         return `
             <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
                  onclick="renderSub('${safeC.replace(/'/g, "\\'")}')">
+                
                 <div class="absolute inset-0 bg-black/45 z-0"></div>
+                
                 <div class="relative z-10 w-full flex justify-between items-center text-white">
                     <span class="font-bold text-xl drop-shadow-md">${safeC}</span>
+                    <span class="text-sm drop-shadow-md">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
                 </div>
             </div>
         `;
     }).join('');
-    updateBackButton();
+    
+    updateBackButton(renderMain);
 }
 
-// 3. عرض الأقسام الفرعية
+// 3. عرض الأقسام الفرعية بخلفية مصورة تابعة لها
 function renderSub(catName) {
     resetGlobalBackground();
-    toggleLogo(false);
+    toggleLogo(false); // إخفاء اللوجو عند عرض الأقسام الفرعية
+
     const content = document.getElementById('content');
     if (!content) return;
-
-    if (history.state?.view !== 'sub' || history.state?.cat !== catName) {
-        history.pushState({ view: 'sub', cat: catName }, '', '');
-    }
 
     const items = menuData.filter(i => i[`cat_${currentLang}`] === catName);
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
+    // إذا كان القسم مباشراً ومثبتاً بدون فروع فرعية
     if (subs.length === 0) {
-        renderItems(catName, "", false); // false يعني لا يوجد قسم فرعي
+        renderItems(catName, "", false);
         return;
     }
     
@@ -105,33 +110,26 @@ function renderSub(catName) {
             <div class="relative overflow-hidden w-full h-24 rounded-xl shadow-md border border-white/10 transition-all hover:scale-[1.01] cursor-pointer flex items-center p-4 bg-brand-light bg-cover bg-center" 
                  style="background-image: url('${bgImage}');"
                  onclick="renderItems('${safeCatName.replace(/'/g, "\\'")}', '${safeS.replace(/'/g, "\\'")}', true)">
+                
                 <div class="absolute inset-0 bg-black/45 z-0"></div>
+                
                 <div class="relative z-10 w-full flex justify-between items-center text-white">
                     <span class="font-bold text-xl drop-shadow-md">${safeS}</span>
+                    <span class="text-sm drop-shadow-md">${currentLang === 'ar' ? '⬅️' : '➡️'}</span>
                 </div>
             </div>
         `;
     }).join('');
-    updateBackButton();
+    
+    updateBackButton(showCategories);
 }
 
-// 4. عرض المنتجات
+// 4. عرض المنتجات الفردية بحجم بطاقات موحد
 function renderItems(catName, subName, hasParentSub) {
-    toggleLogo(false);
+    toggleLogo(false); // إخفاء اللوجو عند عرض قائمة الأطباق
+    
     const content = document.getElementById('content');
     if (!content) return;
-
-    // تسجيل الحالة مع تحديد الأب (parent) بدقة
-    const stateObj = { 
-        view: 'items', 
-        cat: catName, 
-        sub: subName, 
-        parent: hasParentSub ? 'sub' : 'cats' 
-    };
-
-    if (JSON.stringify(history.state) !== JSON.stringify(stateObj)) {
-        history.pushState(stateObj, '', '');
-    }
 
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
@@ -140,51 +138,36 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
+        // تطهير البيانات قبل عرضها
         const safeImg = sanitizeHTML(i.image);
         const safeName = sanitizeHTML(i[`name_${currentLang}`]);
         const safePrice = sanitizeHTML(i.price);
-        const imgTag = safeImg.trim() !== "" ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` : '';
+
+        const imgTag = safeImg.trim() !== "" 
+            ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` 
+            : '';
 
         return `
             <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
+                
                 <div class="flex items-center gap-3 h-full">
                     ${imgTag}
                     <span class="font-bold text-brand-dark text-lg flex items-center h-full">${safeName}</span>
                 </div>
+                
                 <span class="text-brand font-black text-xl whitespace-nowrap flex items-center gap-1 h-full">
                     ${safePrice}<span class="text-[11px] font-normal text-brand-dark/60 tracking-wide">MAD</span>
                 </span>
+                
             </div>
         `;
     }).join('');
-    updateBackButton();
+
+    updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
 }
 
-// إضافة مُستمع الحدث لإدارة الرجوع (popstate)
-window.addEventListener('popstate', (event) => {
-    if (!event.state) { renderMain(); return; }
-    
-    const { view, cat, sub, parent } = event.state;
-    if (view === 'main') renderMain();
-    else if (view === 'cats') showCategories();
-    else if (view === 'sub') renderSub(cat);
-    else if (view === 'items') renderItems(cat, sub, parent === 'sub');
-});
-
-// تحديث الزر ليقوم دائماً بالرجوع للمتصفح
-function updateBackButton() {
-    const btn = document.getElementById('backBtn');
-    if (!btn) return;
-    
-    if (!history.state || history.state.view === 'main') {
-        btn.classList.add('hidden');
-    } else {
-        btn.classList.remove('hidden');
-        btn.onclick = () => window.history.back();
-    }
-}
 /* =========================================
-   ميزات البحث الذكي
+   ميزات البحث الذكي (Fuse.js + Smart Dictionary)
    ========================================= */
 
 function toggleSearch() {
@@ -210,6 +193,7 @@ function performSearch(query) {
         return;
     }
 
+    // 1. استخدام محرك Fuse.js للبحث والتغاضي عن الأخطاء الإملائية
     const options = {
         includeScore: true,
         threshold: 0.4, 
@@ -218,8 +202,10 @@ function performSearch(query) {
 
     const fuse = new Fuse(menuData, options);
     let results = fuse.search(q).map(res => res.item);
+
     let isFallback = false;
 
+    // 2. دمج القاموس الذكي 
     if (results.length === 0) {
         const smartDictionary = {
             'بانيني': ['طاكوس', 'شاورما', 'ساندويتش', 'tacos', 'sandwich'],
@@ -254,31 +240,43 @@ function performSearch(query) {
 
 function renderSearchResults(items, isFallback, safeQuery) {
     resetGlobalBackground();
-    toggleLogo(false); 
+    toggleLogo(false); // إخفاء اللوجو في صفحة البحث لضمان ظهور النتائج بوضوح
     
     const content = document.getElementById('content');
     if (!content) return;
 
     let html = '';
+    
     const messages = {
         ar: isFallback ? `لم نعثر على "<b>${safeQuery}</b>"، لكن هذه الخيارات قد تعجبك:` : `نتائج البحث عن "<b>${safeQuery}</b>":`,
         fr: isFallback ? `Nous n'avons pas trouvé "<b>${safeQuery}</b>", mais voici des alternatives :` : `Résultats pour "<b>${safeQuery}</b>":`,
         en: isFallback ? `We didn't find "<b>${safeQuery}</b>", but you might like these:` : `Search results for "<b>${safeQuery}</b>":`
     };
 
+    const emptyMsg = {
+        ar: 'عذراً، لم نجد أي أطباق مطابقة لبحثك.',
+        fr: 'Désolé, aucun plat ne correspond à votre recherche.',
+        en: 'Sorry, no items match your search.'
+    };
+
     if (items.length === 0) {
         html = `<div id="searchIndicator" class="text-center text-brand-dark mt-12 p-4 bg-brand-light rounded-xl border border-brand/20">
-                    <p class="font-medium">${currentLang === 'ar' ? 'عذراً، لم نجد أي أطباق مطابقة لبحثك.' : 'Désolé, aucun plat ne correspond à votre recherche.'}</p>
+                    <p class="font-medium">${emptyMsg[currentLang]}</p>
                 </div>`;
     } else {
-        html = `<div id="searchIndicator" class="mb-4 text-sm ${isFallback ? 'text-brand-dark bg-brand-light border-brand/30' : 'text-brand bg-brand-light/50 border-brand/20'} p-3 rounded-lg border">
-                    ${messages[currentLang]}
-                </div>`;
+        html = `
+            <div id="searchIndicator" class="mb-4 text-sm ${isFallback ? 'text-brand-dark bg-brand-light border-brand/30' : 'text-brand bg-brand-light/50 border-brand/20'} p-3 rounded-lg border">
+                ${messages[currentLang]}
+            </div>
+        `;
         html += items.map(i => {
             const safeImg = sanitizeHTML(i.image);
             const safeName = sanitizeHTML(i[`name_${currentLang}`]);
             const safePrice = sanitizeHTML(i.price);
-            const imgTag = safeImg.trim() !== "" ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` : '';
+
+            const imgTag = safeImg.trim() !== "" 
+                ? `<img src="${safeImg}" loading="lazy" class="item-img-fixed rounded-xl flex-shrink-0" alt="${safeName}">` 
+                : '';
 
             return `
                 <div class="item-card-fixed bg-white border border-gray-100 shadow-sm rounded-2xl px-4 flex items-center justify-between mb-3 transition-all hover:border-brand/30">
@@ -296,5 +294,9 @@ function renderSearchResults(items, isFallback, safeQuery) {
 
     content.innerHTML = html;
     
-    updateBackButton();
+    updateBackButton(() => {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchContainer').classList.add('hidden');
+        showCategories();
+    });
 }
