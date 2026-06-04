@@ -1,14 +1,13 @@
-// --- مدير حالة التنقل ---
 window.addEventListener('popstate', (event) => {
-    // 1. تنظيف حقل البحث دائماً عند التنقل بين الحالات (زر الرجوع)
+    // 1. تنظيف حقل البحث دائماً عند التنقل بين الحالات
     const searchInput = document.getElementById('searchInput');
     const searchContainer = document.getElementById('searchContainer');
     if (searchInput) searchInput.value = '';
     if (searchContainer) searchContainer.classList.add('hidden');
 
-    // 2. فك تشفير الحالة والعودة للخلف
+    // 2. فك تشفير الحالة والعودة للخلف بناءً على البيانات المخزنة
     if (event.state && event.state.view) {
-        const { view, cat, sub } = event.state;
+        const { view, cat, sub, parent } = event.state;
         
         if (view === 'main') {
             renderMain();
@@ -17,7 +16,8 @@ window.addEventListener('popstate', (event) => {
         } else if (view === 'sub') {
             renderSub(cat);
         } else if (view === 'items') {
-            renderItems(cat, sub, true);
+            // نستخدم القيمة المخزنة في parent لمعرفة كيفية العرض
+            renderItems(cat, sub, parent === 'sub');
         }
     } else {
         renderMain();
