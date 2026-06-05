@@ -1,9 +1,31 @@
+window.addEventListener('popstate', (event) => {
+    const searchInput = document.getElementById('searchInput');
+    const searchContainer = document.getElementById('searchContainer');
+    if (searchInput) searchInput.value = '';
+    if (searchContainer) searchContainer.classList.add('hidden');
+
+    if (event.state && event.state.view) {
+        const { view, cat, sub } = event.state;
+        
+        if (view === 'main') {
+            renderMain();
+        } else if (view === 'cats') {
+            showCategories();
+        } else if (view === 'sub') {
+            renderSub(cat);
+        } else if (view === 'items') {
+            renderItems(cat, sub, true);
+        }
+    } else {
+        renderMain();
+    }
+});
+
 function toggleLangMenu() {
     const menu = document.getElementById('langMenu');
     if (menu) menu.classList.toggle('hidden');
 }
 
-// معالجة تغيير اللغة والاتجاه الجغرافي للمنيو (RTL / LTR) بشكل ديناميكي كامل
 function changeLanguage(lang, flag) {
     currentLang = lang;
     const flagElem = document.getElementById('currentFlag');
@@ -13,18 +35,19 @@ function changeLanguage(lang, flag) {
     document.documentElement.lang = lang;
     
     toggleLangMenu();
+    
+    history.replaceState({ view: 'main' }, '', '');
     renderMain();
 }
 
-// تحديث ذكي ومستقر لزر الرجوع حسب وضعية التصفح واللغة الحالية
-function updateBackButton(callback) {
+function updateBackButton() {
     const btn = document.getElementById('backBtn');
     if (!btn) return;
     
     btn.classList.remove('hidden');
     btn.innerHTML = (currentLang === 'ar') ? 'رجوع ⬅' : '⬅ Retour';
-    btn.onclick = callback;
+    
+    btn.onclick = () => history.back();
 }
 
-// إشارة البدء: انطلاق جلب البيانات فور تحميل الصفحة وسيرفرات جيت هاب
 init();
