@@ -2,11 +2,10 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    -webkit-tap-highlight-color: transparent; /* يمنع الوميض الأزرق عند اللمس لتبدو كتطبيق حقيقي */
+    -webkit-tap-highlight-color: transparent; 
     outline: none;
 }
 
-/* --- ميزة: تنعيم حركات تنقل الواجهات وتلاشي الصفحات --- */
 @keyframes fadeIn {
     from { 
         opacity: 0; 
@@ -22,7 +21,6 @@
     animation: fadeIn 0.35s ease-out forwards;
 }
 
-/* --- تصميم البطاقة الافتراضية (تحديث بطاقتك الأصلية مع إضافة تأثير حركة مرن) --- */
 .card {
     border: 1px solid #e5e7eb;
     border-radius: 15px;
@@ -38,10 +36,10 @@
 .card:hover { 
     background: #f9fafb; 
     border-color: #d1d5db; 
-    transform: translateY(-1px); /* حركة صعود خفيفة تعطي إحساساً بالتفاعل */
+    transform: translateY(-1px); 
 }
 
-/* --- ميزة: تصميم الزجاج الشفاف المطور (Premium Glassmorphism) لقائمة المنتجات --- */
+/* ---  (Premium Glassmorphism) --- */
 .card-glass-item {
     background: rgba(255, 255, 255, 0.78);
     backdrop-filter: blur(12px);
@@ -56,7 +54,7 @@
     transform: scale(1.005);
 }
 
-/* --- ميزة: الهيكل العظمي المتحرك (Skeleton Loader Shimmer) أثناء جلب البيانات من قوقل --- */
+/* ---  (Skeleton Loader Shimmer)  --- */
 @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -68,9 +66,8 @@
     animation: shimmer 1.5s infinite linear;
 }
 
-/* --- ميزة: تخصيص شريط تمرير ذكي ونحيف جداً للهواتف المتصفحة --- */
 ::-webkit-scrollbar {
-    width: 4px; /* حجم نحيف وغير مزعج بصرياً */
+    width: 4px; 
 }
 
 ::-webkit-scrollbar-track {
@@ -86,7 +83,6 @@
     background: rgba(0, 0, 0, 0.25);
 }
 
-/* --- فئات مخصصة لتوحيد أحجام المنتجات ومنع التشوه البصري (تمت إضافتها) --- */
 .item-card-fixed {
     height: 60px;
 }
