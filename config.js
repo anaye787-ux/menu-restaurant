@@ -3,10 +3,8 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRj_giqJJMsxVWM
 let menuData = [];
 let currentLang = 'fr';
 
-// دالة جلب البيانات الأساسية للمشروع
 async function init() {
     try {
-        // إظهار تأثير الهيكل العظمي المتحرك (Skeleton Loader) أثناء التحميل
         const content = document.getElementById('content');
         if (content) {
             content.innerHTML = Array(4).fill(0).map(() => `
@@ -19,12 +17,10 @@ async function init() {
         
         const text = await res.text();
         
-        // --- التحديث هنا: استخدام PapaParse بدلاً من المعالجة اليدوية ---
         const parsedData = Papa.parse(text, { skipEmptyLines: true });
         const rows = parsedData.data.slice(1); // تجاهل السطر الأول (العناوين)
         
         menuData = rows.map(cols => {
-            // الدالة المساعدة لتنظيف البيانات (مأخوذة من كودك)
             const clean = (val) => val ? val.trim() : '';
             
             return {
@@ -42,24 +38,20 @@ async function init() {
             };
         }).filter(item => item.cat_fr || item.cat_ar);
         
-        // الانتقال لرسم الواجهة الترحيبية بعد اكتمال جلب البيانات بنجاح
         renderMain();
         
     } catch (err) {
         console.error("Critical Error Initialization Failed:", err);
         
-        // نصوص رسالة الخطأ وزر المحاولة لتتناسب مع تعدد اللغات (مأخوذة من كودك دون تعديل)
         const errorUI = {
             ar: { msg: 'عذراً، حدث خطأ في الاتصال. يرجى التحقق من الشبكة.', btn: 'إعادة المحاولة 🔄' },
             fr: { msg: 'Erreur de connexion. Veuillez vérifier votre réseau.', btn: 'Réessayer 🔄' },
             en: { msg: 'Connection error. Please check your network.', btn: 'Retry 🔄' }
         };
 
-        const lang = typeof currentLang !== 'undefined' ? currentLang : 'fr'; // تأمين لغة افتراضية
-
+        const lang = typeof currentLang !== 'undefined' ? currentLang : 'fr'; 
         const content = document.getElementById('content');
         if (content) {
-            // رسم واجهة الخطأ مع زر إعادة المحاولة المرتبط بدالة init (مأخوذة من كودك دون تعديل)
             content.innerHTML = `
                 <div class="flex flex-col items-center justify-center p-6 mt-12 text-center space-y-5 animate-[fadeIn_0.3s_ease-out]">
                     <div class="text-red-500 bg-red-50 p-4 rounded-full shadow-sm">
