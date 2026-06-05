@@ -1,11 +1,10 @@
 const sanitizeHTML = (str) => {
     if (!str) return '';
     const tempDiv = document.createElement('div');
-    tempDiv.textContent = str; // المتصفح يحول أي كود خبيث إلى نص عادي غير ضار
+    tempDiv.textContent = str; 
     return tempDiv.innerHTML;
 };
 
-// --- دالة مساعدة للتحكم في ظهور وإخفاء اللوجو ---
 function toggleLogo(show) {
     const logo = document.getElementById('mainLogo');
     if (!logo) return;
@@ -16,18 +15,15 @@ function toggleLogo(show) {
     }
 }
 
-// دالة مساعدة لإعادة تنظيف خلفية الشاشة والعودة للخلفية الضبابية الافتراضية عند الرجوع
 function resetGlobalBackground() {
     const appWrapper = document.getElementById('app') || document.body;
     appWrapper.style.backgroundImage = '';
 }
 
-// 1. رسم الواجهة الترحيبية الرئيسية
 function renderMain() {
     resetGlobalBackground();
-    toggleLogo(true); // إظهار اللوجو في الصفحة الرئيسية
+    toggleLogo(true); 
     
-    // تسجيل الحالة في التاريخ
     if (history.state?.view !== 'main') {
         history.pushState({ view: 'main' }, '', '');
     }
@@ -54,15 +50,13 @@ function renderMain() {
     if (backBtn) backBtn.classList.add('hidden');
 }
 
-// 2. عرض الأقسام الرئيسية بخلفية مصورة كاملة وتعتيم ذكي
 function showCategories() {
     resetGlobalBackground();
-    toggleLogo(false); // إخفاء اللوجو عند عرض الأقسام لتوفير المساحة
+    toggleLogo(false); 
     
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل الحالة في التاريخ
     if (history.state?.view !== 'cats') {
         history.pushState({ view: 'cats' }, '', '');
     }
@@ -70,7 +64,6 @@ function showCategories() {
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`]).filter(Boolean))];
     
     content.innerHTML = cats.map(c => {
-        // استخراج أول رابط صورة متاح
         const catItems = menuData.filter(i => i[`cat_${currentLang}`] === c);
         const bgImage = sanitizeHTML(catItems.find(i => i.image)?.image || '');
         const safeC = sanitizeHTML(c);
@@ -93,10 +86,9 @@ function showCategories() {
     updateBackButton();
 }
 
-// 3. عرض الأقسام الفرعية بخلفية مصورة تابعة لها
 function renderSub(catName) {
     resetGlobalBackground();
-    toggleLogo(false); // إخفاء اللوجو عند عرض الأقسام الفرعية
+    toggleLogo(false); 
 
     const content = document.getElementById('content');
     if (!content) return;
@@ -104,20 +96,16 @@ function renderSub(catName) {
     const items = menuData.filter(i => i[`cat_${currentLang}`] === catName);
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
-    // --- الفكرة خارج الصندوق: التعامل الذكي مع الأقسام المباشرة ---
     if (subs.length === 0) {
-        // إذا وصلنا هنا بضغط زر الرجوع، يعني أننا نتراجع، فنطلب خطوة إضافية للخلف فوراً لتجاوز هذه المحطة الوهمية
         if (history.state?.view === 'sub') {
             history.back();
             return;
         }
-        // إذا كان ضغطاً مستقبلياً من صفحة الأقسام، نسجل محطة وهمية ثم ننتقل للأطباق
         history.pushState({ view: 'sub', cat: catName }, '', '');
         renderItems(catName, "", false);
         return;
     }
     
-    // تسجيل الحالة للأقسام الفرعية العادية
     if (history.state?.view !== 'sub' || history.state?.cat !== catName) {
         history.pushState({ view: 'sub', cat: catName }, '', '');
     }
@@ -146,14 +134,12 @@ function renderSub(catName) {
     updateBackButton();
 }
 
-// 4. عرض المنتجات الفردية بحجم بطاقات موحد
 function renderItems(catName, subName, hasParentSub) {
-    toggleLogo(false); // إخفاء اللوجو عند عرض قائمة الأطباق
+    toggleLogo(false); 
     
     const content = document.getElementById('content');
     if (!content) return;
 
-    // تسجيل حالة المنتجات في التاريخ
     if (history.state?.view !== 'items' || history.state?.sub !== subName) {
         history.pushState({ view: 'items', cat: catName, sub: subName }, '', '');
     }
@@ -165,7 +151,6 @@ function renderItems(catName, subName, hasParentSub) {
     );
     
     content.innerHTML = items.map(i => {
-        // تطهير البيانات قبل عرضها
         const safeImg = sanitizeHTML(i.image);
         const safeName = sanitizeHTML(i[`name_${currentLang}`]);
         const safePrice = sanitizeHTML(i.price);
@@ -194,7 +179,7 @@ function renderItems(catName, subName, hasParentSub) {
 }
 
 /* =========================================
-   ميزات البحث الذكي (Fuse.js + Smart Dictionary)
+    (Fuse.js + Smart Dictionary)
    ========================================= */
 
 function toggleSearch() {
@@ -220,7 +205,6 @@ function performSearch(query) {
         return;
     }
 
-    // 1. استخدام محرك Fuse.js للبحث والتغاضي عن الأخطاء الإملائية
     const options = {
         includeScore: true,
         threshold: 0.4, 
@@ -232,7 +216,6 @@ function performSearch(query) {
 
     let isFallback = false;
 
-    // 2. دمج القاموس الذكي 
     if (results.length === 0) {
         const smartDictionary = {
             'بانيني': ['طاكوس', 'شاورما', 'ساندويتش', 'tacos', 'sandwich'],
@@ -267,7 +250,7 @@ function performSearch(query) {
 
 function renderSearchResults(items, isFallback, safeQuery) {
     resetGlobalBackground();
-    toggleLogo(false); // إخفاء اللوجو في صفحة البحث لضمان ظهور النتائج بوضوح
+    toggleLogo(false); 
     
     const content = document.getElementById('content');
     if (!content) return;
@@ -321,6 +304,5 @@ function renderSearchResults(items, isFallback, safeQuery) {
 
     content.innerHTML = html;
     
-    // استدعاء مباشر ومستقر؛ مستمع popstate في ملف app.js سيتكفل بالباقي
     updateBackButton();
 }
