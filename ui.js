@@ -27,6 +27,11 @@ function renderMain() {
     resetGlobalBackground();
     toggleLogo(true); // إظهار اللوجو في الصفحة الرئيسية
     
+    // تسجيل الحالة في التاريخ
+    if (history.state?.view !== 'main') {
+        history.pushState({ view: 'main' }, '', '');
+    }
+    
     const content = document.getElementById('content');
     if (!content) return;
 
@@ -57,6 +62,11 @@ function showCategories() {
     const content = document.getElementById('content');
     if (!content) return;
 
+    // تسجيل الحالة في التاريخ
+    if (history.state?.view !== 'cats') {
+        history.pushState({ view: 'cats' }, '', '');
+    }
+
     const cats = [...new Set(menuData.map(i => i[`cat_${currentLang}`]).filter(Boolean))];
     
     content.innerHTML = cats.map(c => {
@@ -80,7 +90,7 @@ function showCategories() {
         `;
     }).join('');
     
-    updateBackButton(renderMain);
+    updateBackButton();
 }
 
 // 3. عرض الأقسام الفرعية بخلفية مصورة تابعة لها
@@ -94,10 +104,22 @@ function renderSub(catName) {
     const items = menuData.filter(i => i[`cat_${currentLang}`] === catName);
     const subs = [...new Set(items.map(i => i[`sub_${currentLang}`]).filter(s => s && s !== '-'))];
     
-    // إذا كان القسم مباشراً ومثبتاً بدون فروع فرعية
+    // --- الفكرة خارج الصندوق: التعامل الذكي مع الأقسام المباشرة ---
     if (subs.length === 0) {
+        // إذا وصلنا هنا بضغط زر الرجوع، يعني أننا نتراجع، فنطلب خطوة إضافية للخلف فوراً لتجاوز هذه المحطة الوهمية
+        if (history.state?.view === 'sub') {
+            history.back();
+            return;
+        }
+        // إذا كان ضغطاً مستقبلياً من صفحة الأقسام، نسجل محطة وهمية ثم ننتقل للأطباق
+        history.pushState({ view: 'sub', cat: catName }, '', '');
         renderItems(catName, "", false);
         return;
+    }
+    
+    // تسجيل الحالة للأقسام الفرعية العادية
+    if (history.state?.view !== 'sub' || history.state?.cat !== catName) {
+        history.pushState({ view: 'sub', cat: catName }, '', '');
     }
     
     content.innerHTML = subs.map(s => {
@@ -121,7 +143,7 @@ function renderSub(catName) {
         `;
     }).join('');
     
-    updateBackButton(showCategories);
+    updateBackButton();
 }
 
 // 4. عرض المنتجات الفردية بحجم بطاقات موحد
@@ -130,6 +152,11 @@ function renderItems(catName, subName, hasParentSub) {
     
     const content = document.getElementById('content');
     if (!content) return;
+
+    // تسجيل حالة المنتجات في التاريخ
+    if (history.state?.view !== 'items' || history.state?.sub !== subName) {
+        history.pushState({ view: 'items', cat: catName, sub: subName }, '', '');
+    }
 
     const items = menuData.filter(i => 
         i[`cat_${currentLang}`] === catName && 
@@ -163,7 +190,7 @@ function renderItems(catName, subName, hasParentSub) {
         `;
     }).join('');
 
-    updateBackButton(hasParentSub ? () => renderSub(catName) : showCategories);
+    updateBackButton();
 }
 
 /* =========================================
@@ -294,9 +321,6 @@ function renderSearchResults(items, isFallback, safeQuery) {
 
     content.innerHTML = html;
     
-    updateBackButton(() => {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('searchContainer').classList.add('hidden');
-        showCategories();
-    });
+    // استدعاء مباشر ومستقر؛ مستمع popstate في ملف app.js سيتكفل بالباقي
+    updateBackButton();
 }
