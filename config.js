@@ -18,7 +18,7 @@ async function init() {
         const text = await res.text();
         
         const parsedData = Papa.parse(text, { skipEmptyLines: true });
-        const rows = parsedData.data.slice(1); // تجاهل السطر الأول (العناوين)
+        const rows = parsedData.data.slice(1); 
         
         menuData = rows.map(cols => {
             const clean = (val) => val ? val.trim() : '';
